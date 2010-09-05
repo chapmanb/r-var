@@ -1,0 +1,122 @@
+(comment "
+  HTML templates for web page display.
+")
+
+(ns rvar.templates
+  (:use [clojure.contrib.json :as json]
+        [hiccup.core]
+        [hiccup.page-helpers :only [link-to]]
+        [hiccup.form-helpers :only [form-to file-upload]]
+        [com.reasonr.scriptjure :as scriptjure]
+        [rvar.model])
+  (:require [appengine.users :as users]))
+
+(defn side-bar [request]
+  "Common navigation and user management side bar."
+  (let [ui (users/user-info)]
+  [:div {:class "span-6 last" :id "sidebar"}
+   [:h3 {:class "caps"} "User"]
+   [:div {:class "box"}
+    (if-let [user (:user ui)]
+      [:div {:class "quiet"}
+       (.getEmail user) "<br/>" (link-to (.createLogoutURL (:user-service ui) "/") "Logout")]
+      [:div {:class "quiet"}
+       (link-to (.createLoginURL (:user-service ui) "/") "Login")]
+      )]
+   ]))
+
+(defn std-header [title]
+  "Shared header elements between pages."
+  (html
+    [:title title]
+    [:script {:type "text/javascript"
+              :src "/static/js/jquery-1.4.2.min.js"}]
+    [:script {:type "text/javascript" 
+              :src "/static/js/jquery-ui-1.8.4.custom.min.js"}]
+    [:script {:type "text/javascript" 
+              :src "/static/js/jquery.cookie.js"}]
+    [:script {:type "text/javascript" 
+              :src "/static/js/grid.locale-en.js"}]
+    [:script {:type "text/javascript" 
+              :src "/static/js/jquery.jqGrid.min.js"}]
+    [:link {:type "text/css" :rel "stylesheet" :media "screen" 
+            :href "/static/css/smoothness/jquery-ui-1.8.4.custom.css"}]
+    [:link {:type "text/css" :rel "stylesheet" :media "screen" 
+            :href "/static/css/ui.jqgrid.css"}]
+    [:link {:type "text/css" :rel "stylesheet" :media "screen" 
+            :href "/static/css/blueprint/screen.css"}]
+    [:link {:type "text/css" :rel "stylesheet" :media "print" 
+            :href "/static/css/blueprint/print.css"}]
+    "<!--[if IE]>"
+    [:link {:type "text/css" :rel "stylesheet" :media "screen" 
+            :href "/static/css/blueprint/ie.css"}]
+    "![endif]-->"))
+
+(defn upload-genome []
+  "Provide a form to upload 23andMe genomic information."
+  (form-to {:enctype "multipart/form-data"} [:post "/upload/23andme"]
+      [:fieldset
+       [:legend "Upload 23andMe data"]
+       [:ul
+       ;[:label (:for :ufile) "Data file"]
+        (file-upload :ufile)]
+       [:button (:type "submit") "Process"]]))
+
+(defn clean-db-items [maps]
+  "Remove db-specific keys and parents from a map."
+  (for [cur-map maps]
+    (-> cur-map
+      (dissoc :key)
+      (dissoc :parent))))
+
+(defn var-list [request]
+  "Produce a JSON list of variations for the current user."
+  (let [user (.getEmail ((request :appengine/user-info) :user))
+        params (:params request)
+        rows (Integer/parseInt (get params "rows"))
+        start (* rows (- 1 (Integer/parseInt (get params "page"))))
+        vars (clean-db-items (get-variations user))
+        cur-vars (take rows (drop start vars))]
+    (println cur-vars)
+    (json/json-str {:total (count cur-vars) :page (get params "page")
+                    :records (count cur-vars)
+                    :rows cur-vars})))
+
+(defn personal-template [request]
+  "Information for a logged in users personal page."
+  (let [ui (users/user-info)]
+    (if (:user ui)
+      [:html
+        [:script {:type "text/javascript"
+                  :src "/static/js/rvar/variation.js"}]
+        [:table {:id "var-grid"}]
+        (upload-genome)]
+      [:html "Please "
+       (link-to (.createLoginURL (:user-service ui) "/") "login")
+       " to add your personal genome information."])))
+
+(defn index-template [request]
+  "Main r-var display page."
+  (let [title "Welcome to r-var: exploring our genomic variability"]
+    [:html
+     [:head (std-header title)
+      [:script {:type "text/javascript"}
+       (scriptjure/js (.ready ($ document)
+          (fn [] (.tabs ($ "#tabs") {:cookie {:expires 1}}))))]
+     [:body 
+      [:div {:class "container"}
+       [:div {:id "header" :class "span-18"}
+        [:br]
+        [:h2 title]]
+       [:div {:id "header" :class "span6 last"}
+        [:br]
+         [:h2 [:img {:src "/static/images/aardvark.jpg" :width "120" :height "60"}]]]
+       [:hr]
+       [:div {:class "span-17 colborder" :id "content"}
+        [:div {:id "tabs"}
+         [:ul
+          [:li (link-to "#overview" "Overview")]
+          [:li (link-to "/personal" "Personal")]]
+         [:div {:id "overview"}
+          "Exciting main page content"]]]
+       (side-bar request)]]]]))

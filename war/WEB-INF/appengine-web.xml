@@ -1,0 +1,14 @@
+<appengine-web-app xmlns="http://appengine.google.com/ns/1.0">
+  <application>r-var</application>
+  <version>0.0.1</version>
+  <static-files>
+    <include path="/**.html" />
+    <include path="/static/**.js" />
+    <include path="/static/**.css" />
+    <include path="/static/**.png" />
+    <include path="/static/**.jpg" />
+  </static-files>
+  <resource-files>
+    <include path="/**.xml" />
+  </resource-files>
+</appengine-web-app>

@@ -1,0 +1,31 @@
+# Bulkloader configuration file for importing data into Google App Engine
+# from CSV data files.
+python_preamble:
+- import: base64
+- import: re
+- import: google.appengine.ext.bulkload.transform
+- import: google.appengine.ext.bulkload.bulkloader_wizard
+- import: google.appengine.ext.db
+- import: google.appengine.api.datastore
+- import: google.appengine.api.users
+
+transformers:
+- kind: VariationPhenotype
+  connector: csv
+  property_map:
+    - property: variation
+      external_name: variation
+    - property: phenotype
+      external_name: phenotype
+    - property: study
+      external_name: study
+    - property: study_type
+      external_name: study_type
+    - property: associated_gene
+      external_name: associated_gene
+    - property: associated_variant_risk_allele
+      external_name: associated_variant_risk_allele
+    - property: risk_allele_freq_in_controls
+      external_name: risk_allele_freq_in_controls
+    - property: p_value
+      external_name: p_value

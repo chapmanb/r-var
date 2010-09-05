@@ -1,0 +1,56 @@
+(comment "
+ Data store models representing objects of interest with key/val pairs.
+")
+
+(ns rvar.model
+  (:use [appengine.datastore]))
+
+;(defentity User ()
+;  ((email)
+;   (name)))
+;
+;(defentity Vargroup (User)
+;  ((name)
+;   (reference)
+;   (filename)))
+;
+;(defentity Variation (Vargroup)
+;  ((id)
+;   (chrom)
+;   (start)
+;   (end)
+;   (genotype)))
+;
+;(defentity Comment (Variation)
+;  ((note)))
+
+(defn get-user [email]
+  "Get or create a database user with the given email address."
+  (let [user-query (select "user" where (= :email email))]
+    (if (empty? user-query)
+      (create-entity {:kind "user" :email email})
+      (first user-query))))
+
+(defn load-var-group [user fname]
+  (with-commit-transaction
+    (create-entity {:kind "vargroup" :parent (:key user) :filename fname})))
+
+(defn get-variations [email]
+  "Retrieve a lazy list of variation objects for the given user."
+  (let [user (get-user email)]
+    (flatten
+      (for [var-group (select "vargroup" where (= :parent (:key user)))]
+        (for [cur-var (select "variation" where (= :parent (:key var-group)))]
+          cur-var)))))
+
+(defn load-variances [user fname variances]
+  "Load a lazy stream of variance information into the datastore."
+  (let [group (load-var-group user fname)]
+    (with-commit-transaction
+      (doseq [cur-var (take 1 variances)]
+        (create-entity {:kind "variation" :parent (:key group)
+                        :start (:start cur-var) :end (:end cur-var)
+                        :chrom (:chr cur-var) :genotype (:genotype cur-var)
+                        :id (:id cur-var)
+                        })))
+    group))
