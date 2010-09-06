@@ -7,9 +7,10 @@
 
   2. Edit the bulkloader.yaml to match our output files.
 
-  3. lein run scripts/ensembl_phenotypes.clj variation-phenotypes.csv
+  3. lein run scripts/ensembl_phenotypes.clj script
 
   4. ~/install/gae/google_appengine/appcfg.py upload_data --config_file=bulkloader.yaml --filename=variation-phenotypes.csv --url=http://localhost:8080/remote_api --application=r-var --kind VariationPhenotype
+     ~/install/gae/google_appengine/appcfg.py upload_data --config_file=bulkloader.yaml --filename=phenotypes.csv --url=http://localhost:8080/remote_api --application=r-var --kind Phenotype
 ")
 
 (use '[rvar.ensembl]
@@ -24,8 +25,7 @@
   ["Diabetes" "Type 1 diabetes" "Type 2 diabetes"]
   ["Osteoporosis" "Osteoporosis" "Osteoporosis-related phenotypes"]])
 
-; Not included :associated_gene
-(def csv-items [:variation :phenotype :study :study_type
+(def csv-items [:variation :phenotype :study :study_type :associated_gene
                 :associated_variant_risk_allele :risk_allele_freq_in_controls
                 :p_value])
 
@@ -38,15 +38,24 @@
 (defn phenotype-out [vrn]
   "Retrieve output details in the current variation."
   (for [item csv-items]
-    (get vrn item "")))
+    (let [str-item (get vrn item "")]
+      (if (contains? {:associated_gene ""} item)
+        (str-join ";" str-item)
+        str-item))))
 
-(defn phenotypes-to-csv [out-file]
+(defn phenotypes-to-csv [out-dir]
   "Write out our defined phenotypes of interest to CSV for uploading."
-  (with-out-writer out-file
-    (println (str-join "," (phenotype-header)))
-    (doseq [phenotype phenotypes]
-      (doseq [var (apply phenotype-variations phenotype)]
-        (println (str-join "," (phenotype-out var)))))))
+  (let [p-var-file (str-join "/" [out-dir "variation-phenotypes.csv"])
+        p-file (str-join "/" [out-dir "phenotypes.csv"])]
+    (with-out-writer p-var-file
+      (println (str-join "," (phenotype-header)))
+      (doseq [phenotype phenotypes]
+        (doseq [var (apply phenotype-variations phenotype)]
+          (println (str-join "," (phenotype-out var))))))
+    (with-out-writer p-file
+      (println (str-join "," ["name" "phenotypes"]))
+      (doseq [cur-p phenotypes]
+        (println (str-join "," [(first cur-p) (str-join ";" (rest cur-p))]))))))
 
 (when *command-line-args*
   (phenotypes-to-csv (first *command-line-args*)))

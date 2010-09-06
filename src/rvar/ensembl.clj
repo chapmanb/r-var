@@ -2,8 +2,8 @@
   Provide access to variation data through the Ensembl public MySQL database.
 ")
 (ns rvar.ensembl
-  (:use [clojure.contrib.sql]
-        [clojure.contrib.str-utils :as str]))
+  (:use [clojure.contrib.sql])
+  (:require [clojure.contrib.str-utils2 :as str]))
 
 (defn human-variation-db []
   "Connect to the public Ensembl variation database."
@@ -24,16 +24,19 @@
 
 (defn- clean-annotation [phenotype result]
   "Remove internal identifiers from an Ensembl annotation result."
-  (for [vr (str/re-split #"," (:variation_names result))]
-    (-> (zipmap (keys result) (vals result))
-      (assoc :variation vr)
-      (assoc :phenotype phenotype)
-      (dissoc :variation_annotation_id)
-      (dissoc :variation_id)
-      (dissoc :phenotype_id)
-      (dissoc :source_id)
-      (dissoc :local_stable_id)
-      (dissoc :variation_names))))
+  (for [vr (str/split (:variation_names result) #",")]
+    (let [genes (map str/trim 
+                     (str/split (str (:associated_gene result)) #","))]
+      (-> (zipmap (keys result) (vals result))
+        (assoc :variation vr)
+        (assoc :phenotype phenotype)
+        (assoc :associated_gene genes)
+        (dissoc :variation_annotation_id)
+        (dissoc :variation_id)
+        (dissoc :phenotype_id)
+        (dissoc :source_id)
+        (dissoc :local_stable_id)
+        (dissoc :variation_names)))))
 
 (defn phenotype-variations [base-name & phenotypes]
   "Retrieve variation information for phenotypes."

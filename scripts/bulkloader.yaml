@@ -23,9 +23,20 @@ transformers:
       external_name: study_type
     - property: associated_gene
       external_name: associated_gene
+      import_transform: 'lambda x: x.split(";")'
+      export_transform: 'lambda x: ";".join(x)'
     - property: associated_variant_risk_allele
       external_name: associated_variant_risk_allele
     - property: risk_allele_freq_in_controls
       external_name: risk_allele_freq_in_controls
     - property: p_value
       external_name: p_value
+- kind: Phenotype
+  connector: csv
+  property_map:
+    - property: name
+      external_name: name
+    - property: phenotypes
+      external_name: phenotypes
+      import_transform: 'lambda x: x.split(";")'
+      export_transform: 'lambda x: ";".join(x)'

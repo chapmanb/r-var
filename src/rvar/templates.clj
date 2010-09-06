@@ -9,7 +9,8 @@
         [hiccup.form-helpers :only [form-to file-upload]]
         [com.reasonr.scriptjure :as scriptjure]
         [rvar.model])
-  (:require [appengine.users :as users]))
+  (:require [appengine.users :as users]
+            [gaka [core :as gaka]]))
 
 (defn side-bar [request]
   "Common navigation and user management side bar."
@@ -95,6 +96,19 @@
        (link-to (.createLoginURL (:user-service ui) "/") "login")
        " to add your personal genome information."])))
 
+(defn explore-template [request]
+  "Provide entry points for exploring SNPs related to phenotypes."
+  [:div
+   [:style {:type "text/css"}
+    (gaka/css [:#selectable :list-style-type "none" :margin 0 :padding 0 :width "50%"
+               [:li :margin "3px" :padding "0.4em" :font-size "1.4em" :height "18px"]
+               [:.ui-selected {:background "#F39814" :color "white"}]])]
+   [:script {:type "text/javascript"}
+    (scriptjure/js (fn [] (.selectable ($ "#selectable"))))]
+   [:ol {:id "selectable"}
+    (for [p (get-phenotypes)]
+      [:li {:class "ui-widget-content" :value p} p])]])
+
 (defn index-template [request]
   "Main r-var display page."
   (let [title "Welcome to r-var: exploring our genomic variability"]
@@ -116,6 +130,7 @@
         [:div {:id "tabs"}
          [:ul
           [:li (link-to "#overview" "Overview")]
+          [:li (link-to "/explore" "Explore")]
           [:li (link-to "/personal" "Personal")]]
          [:div {:id "overview"}
           "Exciting main page content"]]]

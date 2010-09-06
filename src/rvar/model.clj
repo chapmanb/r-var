@@ -1,28 +1,8 @@
 (comment "
  Data store models representing objects of interest with key/val pairs.
 ")
-
 (ns rvar.model
   (:use [appengine.datastore]))
-
-;(defentity User ()
-;  ((email)
-;   (name)))
-;
-;(defentity Vargroup (User)
-;  ((name)
-;   (reference)
-;   (filename)))
-;
-;(defentity Variation (Vargroup)
-;  ((id)
-;   (chrom)
-;   (start)
-;   (end)
-;   (genotype)))
-;
-;(defentity Comment (Variation)
-;  ((note)))
 
 (defn get-user [email]
   "Get or create a database user with the given email address."
@@ -54,3 +34,41 @@
                         :id (:id cur-var)
                         })))
     group))
+
+(defn get-phenotypes []
+  "Retrieve top level phenotypes from the datastore."
+  (for [p-data (select "Phenotype")]
+    (:name p-data)))
+
+;(defentity User ()
+;  ((email)
+;   (name)))
+;
+;(defentity Vargroup (User)
+;  ((name)
+;   (reference)
+;   (filename)))
+;
+;(defentity Variation (Vargroup)
+;  ((id)
+;   (chrom)
+;   (start)
+;   (end)
+;   (genotype)))
+;
+;(defentity Comment (Variation)
+;  ((note)))
+;
+;(defentity VariationPhenotype
+; ((variation)
+;  (phenotype)
+;  (study)
+;  (study_type)
+;  (associated_gene)
+;  (associated_variant_risk_allele)
+;  (risk_allele_freq_in_controls)
+;  (p_value)))
+;
+;(defentitry Phenotype
+; ((name)
+;  (phenotypes)))
