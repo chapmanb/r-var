@@ -101,10 +101,15 @@
   [:div
    [:style {:type "text/css"}
     (gaka/css [:#selectable :list-style-type "none" :margin 0 :padding 0 :width "50%"
-               [:li :margin "3px" :padding "0.4em" :font-size "1.4em" :height "18px"]
-               [:.ui-selected {:background "#F39814" :color "white"}]])]
+               [:li :margin "3px" :padding "0.4em" :font-size "1.4em" :height "18px"]])]
    [:script {:type "text/javascript"}
-    (scriptjure/js (fn [] (.selectable ($ "#selectable"))))]
+    (scriptjure/js 
+      (.click (.children ($ "#selectable")) 
+              (fn [] (.toggleClass ($ this) "ui-state-highlight")
+                (.removeClass (.siblings ($ this)) "ui-state-highlight")))
+      (.hover ($ "#selectable li") 
+              (fn [] (.addClass ($ this) "ui-state-hover"))
+              (fn [] (.removeClass ($ this) "ui-state-hover"))))]
    [:ol {:id "selectable"}
     (for [p (get-phenotypes)]
       [:li {:class "ui-widget-content" :value p} p])]])

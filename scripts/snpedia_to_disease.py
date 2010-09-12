@@ -160,7 +160,7 @@ def main(in_snps=None, snp_start=None):
 
 if __name__ == "__main__":
     parser = OptionParser()
-    parser.add_option("-s", "--start", dest=snp_start)
+    parser.add_option("-s", "--start", dest="snp_start")
     options, args = parser.parse_args()
     kwargs = dict(snp_start=options.snp_start)
     main(*args, **kwargs)
