@@ -65,11 +65,12 @@
          (:allele_string feat)
          (:validation_status feat)]))))
 
-(defn- clean-transcript [allele val-status result]
+(defn- clean-transcript [allele val-status vname result]
   "Provide a dictionary with transcript information."
   (-> (zipmap (keys result) (vals result))
     (assoc :allele allele)
     (assoc :validation_status val-status)
+    (assoc :variation vname)
     (dissoc :transcript_variation_id)
     (dissoc :variation_feature_id)
     (dissoc :cds_start)
@@ -85,7 +86,7 @@
     (let [[vf-id allele val-status] (variation-feature vname)
           sql "SELECT * from transcript_variation WHERE variation_feature_id=?"]
       (with-query-results rs [sql vf-id]
-        (doall (map #(clean-transcript allele val-status %) rs))))))
+        (doall (map #(clean-transcript allele val-status vname %) rs))))))
 
 (defn- ensembl-tx-id [tx-stable-id]
   "Retrieve internal ensembl transcript ID from a public ID."
@@ -129,15 +130,12 @@
 
 (defn variation-genes [vname]
   "Identify genes and changes associated with a variation."
-  ; Move repeated transcript details over the base gene object
-  (let [merge-details (fn [var-tx gene]
-        [(-> var-tx
-           (dissoc :allele)
-           (dissoc :validation_status))
-         (-> gene
-           (assoc :allele (:allele var-tx))
-           (assoc :validation_status (:validation_status var-tx)))])]
+  ; Map gene identifiers to transcripts
+  (let [xref-gene (fn [var-tx gene]
+                     [(-> var-tx
+                      (assoc :gene_stable_id (:gene_stable_id gene)))
+                      gene])]
     ; Organize as map of genes to transcripts
-    (reduce (fn [combine [var-tx gene]] 
-              (assoc combine gene (cons var-tx (get combine gene))))
-            {} (map #(apply merge-details %) (transcript-and-genes vname)))))
+    (reduce (fn [all-genes [var-tx gene]] 
+              (assoc all-genes gene (cons var-tx (get all-genes gene))))
+            {} (map #(apply xref-gene %) (transcript-and-genes vname)))))

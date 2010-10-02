@@ -22,6 +22,7 @@
 (defroutes r-var-web
   (GET "/" request (html (index-template request)))
   (GET "/personal" request (html (personal-template request)))
+  (GET "/varview" request (html (variation-template request)))
   (GET "/explore" request (html (explore-template request)))
   (GET "/data/variations" request (var-list request))
   upload-routes

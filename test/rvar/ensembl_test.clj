@@ -21,6 +21,6 @@
 ;        (is (= "rs2107732" (:variation (first vars)))))))
 
 (deftest test-variance-genes
-  ;(let [vname "rs6897932"]
-  (let [vname "rs1815739"]
+  (let [vname "rs6897932"]
+  ;(let [vname "rs1815739"]
     (println (variation-genes vname))))
