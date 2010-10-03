@@ -192,4 +192,4 @@
           [:li (link-to "/varview" "Variations")]
           [:li (link-to "/personal" "Personal")]]
          [:div {:id "overview"}
-          "Exciting main page content"]]]]]]]))
+          ""]]]]]]]))

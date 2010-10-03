@@ -11,6 +11,10 @@
     * gene --> Details about a gene keyed by the unique ensemble identifier
     * variation_tx --> specify a gene name/transcript and modification caused
         by a variation. Includes variation identifier.
+ 
+  Upload:
+      ~/install/gae/google_appengine/appcfg.py upload_data --config_file=bulkloader.yaml --url=http://localhost:8080/remote_api --application=r-var --kind VariationTranscript --filename=variation_tx.csv 
+      ~/install/gae/google_appengine/appcfg.py upload_data --config_file=bulkloader.yaml --url=http://localhost:8080/remote_api --application=r-var --kind Gene --filename=genes.csv 
 ")
 
 (use '[rvar.ensembl]

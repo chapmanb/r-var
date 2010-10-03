@@ -132,11 +132,16 @@
 
 (defn variation-genes [vname]
   "Identify genes and changes associated with a variation."
-  ; Map gene identifiers to transcripts
-  (let [xref-gene (fn [var-tx gene]
+  ; Map gene identifiers to transcripts and clean up commas
+  (let [clean-commas (fn [input]
+                       (if input
+                         (str/replace input "," "")
+                         input))
+        xref-gene (fn [var-tx gene]
                      [(-> var-tx
-                      (assoc :gene_stable_id (:gene_stable_id gene)))
-                      gene])]
+                        (assoc :gene_stable_id (:gene_stable_id gene)))
+                      (-> gene
+                        (assoc :description (clean-commas (:description gene))))])]
     ; Organize as map of genes to transcripts
     (reduce (fn [all-genes [var-tx gene]] 
               (assoc all-genes gene (cons var-tx (get all-genes gene))))

@@ -40,3 +40,27 @@ transformers:
       external_name: phenotypes
       import_transform: 'lambda x: x.split(";")'
       export_transform: 'lambda x: ";".join(x)'
+- kind: VariationTranscript
+  connector: csv
+  property_map:
+    - property: transcript_stable_id
+      external_name: transcript_stable_id
+    - property: gene_stable_id
+      external_name: gene_stable_id
+    - property: variation
+      external_name: variation
+    - property: allele
+      external_name: allele
+    - property: peptide_allele_string
+      external_name: peptide_allele_string
+    - property: consequence_type
+      external_name: consequence_type
+- kind: Gene
+  connector: csv
+  property_map:
+    - property: gene_stable_id
+      external_name: gene_stable_id
+    - property: name
+      external_name: name
+    - property: description
+      external_name: description
