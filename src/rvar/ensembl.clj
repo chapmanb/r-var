@@ -71,6 +71,8 @@
     (assoc :allele allele)
     (assoc :validation_status val-status)
     (assoc :variation vname)
+    ; Grab only the first consequence if multiple are listed
+    (#(assoc % :consequence_type (first (str/split (:consequence_type %) #","))))
     (dissoc :transcript_variation_id)
     (dissoc :variation_feature_id)
     (dissoc :cds_start)
