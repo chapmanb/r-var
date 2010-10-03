@@ -42,18 +42,26 @@
 (defn- genes-and-print-variations [vrns]
   "Return associated genes, printing variation information as a side effect."
   (lazy-seq
-    (let [snp-in-line (fn [cur-line]
-                        (first (re-split #"," cur-line)))]
-      (when-let [cur-line (first vrns)]
-        (let [gene-txs (variation-genes (snp-in-line cur-line))]
-          (print-variations gene-txs)
-          (flatten (cons (keys gene-txs) (genes-and-print-variations (rest vrns)))))))))
+    (when-let [cur-vrn (first vrns)]
+      (let [gene-txs (variation-genes cur-vrn)]
+        (print-variations gene-txs)
+        (flatten (cons (keys gene-txs) (genes-and-print-variations (rest vrns))))))))
+
+(defn- file-variations [var-file]
+  "Lazy sequence of unique variations in a file."
+  ; The variation is the first item of a comma separated line
+  (let [vrn-in-line (fn [cur-line]
+                      (first (re-split #"," cur-line)))]
+    (distinct
+      ; Use rest to remove the first line header and iterate over remainder
+      (for [line (rest (line-seq (reader var-file)))]
+        (vrn-in-line line)))))
 
 (defn- gene-map [var-file]
   "Retrieve map of unique genes in the listed variations."
   (reduce (fn [genes gene]
             (assoc genes (:gene_stable_id gene) gene))
-    {} (genes-and-print-variations (rest (line-seq (reader var-file))))))
+    {} (genes-and-print-variations (file-variations var-file))))
 
 (defn transcript-csv [var-file out-dir]
   (let [gene-file (str-join "/" [out-dir "genes.csv"])

@@ -12,6 +12,17 @@
   (:require [appengine.users :as users]
             [gaka [core :as gaka]]))
 
+(defn user-info [request]
+  (let [ui (users/user-info)]
+  [:div {:class "span-24 last"}
+    (if-let [user (:user ui)]
+      [:div {:id "user-manage"}
+       (link-to (.createLogoutURL (:user-service ui) "/") (.getEmail user))]
+      [:div {:id "user-manage"}
+       (link-to (.createLoginURL (:user-service ui) "/") "Login")]
+      )
+   ]))
+
 (defn side-bar [request]
   "Common navigation and user management side bar."
   (let [ui (users/user-info)]
@@ -41,7 +52,7 @@
     [:script {:type "text/javascript" 
               :src "/static/js/jquery.jqGrid.min.js"}]
     [:link {:type "text/css" :rel "stylesheet" :media "screen" 
-            :href "/static/css/smoothness/jquery-ui-1.8.4.custom.css"}]
+            :href "/static/css/Aristo/jquery-ui-1.8rc3.custom.css"}]
     [:link {:type "text/css" :rel "stylesheet" :media "screen" 
             :href "/static/css/ui.jqgrid.css"}]
     [:link {:type "text/css" :rel "stylesheet" :media "screen" 
@@ -51,7 +62,11 @@
     "<!--[if IE]>"
     [:link {:type "text/css" :rel "stylesheet" :media "screen" 
             :href "/static/css/blueprint/ie.css"}]
-    "![endif]-->"))
+    "![endif]-->"
+    [:style {:type "text/css"}
+     (gaka/css [:#user-manage :float "right"]
+               [:#header-logo :float "left" :margin-right "10px" :margin-bottom "20px"]
+               [:#header-title :float "left" :vertical-align "center"])]))
 
 (defn upload-genome []
   "Provide a form to upload 23andMe genomic information."
@@ -96,7 +111,7 @@
        (link-to (.createLoginURL (:user-service ui) "/") "login")
        " to add your personal genome information."])))
 
-(defn explore-template [request]
+(defn health-template [request]
   "Provide entry points for exploring SNPs related to phenotypes."
   [:div
    [:style {:type "text/css"}
@@ -153,28 +168,28 @@
 
 (defn index-template [request]
   "Main r-var display page."
-  (let [title "Welcome to r-var: exploring our genomic variability"]
+  (let [title "r-var: exploring our genomic variability"]
     [:html
      [:head (std-header title)
       [:script {:type "text/javascript"}
        (scriptjure/js (.ready ($ document)
-          (fn [] (.tabs ($ "#tabs") {:cookie {:expires 1}}))))]
+          (fn [] (.tabs ($ "#tabs") {:cookie {:expires 1}})
+            (.button ($ "#user-manage a")))))]
      [:body 
       [:div {:class "container"}
-       [:div {:id "header" :class "span-18"}
-        [:br]
-        [:h2 title]]
-       [:div {:id "header" :class "span6 last"}
-        [:br]
-         [:h2 [:img {:src "/static/images/aardvark.jpg" :width "120" :height "60"}]]]
-       [:hr]
-       [:div {:class "span-17 colborder" :id "content"}
+       (user-info request)
+       [:div {:id "header" :class "span-24 last"}
+        [:div {:id "header-logo"}
+          [:img {:src "/static/images/aardvark.jpg" :width "120" :height "60"}]]
+        [:div {:id "header-title"}
+          [:h2 title]]]]
+      [:div {:class "container"}
+       [:div {:class "span-24 last" :id "content"}
         [:div {:id "tabs"}
          [:ul
           [:li (link-to "#overview" "Overview")]
-          [:li (link-to "/explore" "Explore")]
+          [:li (link-to "/health" "Health")]
           [:li (link-to "/varview" "Variations")]
           [:li (link-to "/personal" "Personal")]]
          [:div {:id "overview"}
-          "Exciting main page content"]]]
-       (side-bar request)]]]]))
+          "Exciting main page content"]]]]]]]))
