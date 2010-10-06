@@ -38,9 +38,7 @@
 (defn get-phenotypes []
   "Retrieve top level phenotypes from the datastore."
   (for [p-data (select "Phenotype")]
-    (do
-      (println p-data)
-      (:name p-data))))
+    (:name p-data)))
 
 ;(defentity User ()
 ;  ((email)

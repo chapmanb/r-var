@@ -3,14 +3,14 @@
 
 
   1. ~/install/gae/google_appengine/appcfg.py create_bulkloader_config 
-     --filename=bulkloader.yaml --url=http://localhost:8080/remote_api --application=r-var
+     --filename=bulkloader.yaml --url=http://localhost:8080/remote_api --application=our-var
 
   2. Edit the bulkloader.yaml to match our output files.
 
   3. lein run scripts/ensembl_phenotypes.clj script
 
-  4. ~/install/gae/google_appengine/appcfg.py upload_data --config_file=bulkloader.yaml --filename=variation-phenotypes.csv --url=http://localhost:8080/remote_api --application=r-var --kind VariationPhenotype
-     ~/install/gae/google_appengine/appcfg.py upload_data --config_file=bulkloader.yaml --filename=phenotypes.csv --url=http://localhost:8080/remote_api --application=r-var --kind Phenotype
+  4. ~/install/gae/google_appengine/appcfg.py upload_data --config_file=bulkloader.yaml --filename=variation-phenotypes.csv --url=http://localhost:8080/remote_api --application=our-var --kind VariationPhenotype
+     ~/install/gae/google_appengine/appcfg.py upload_data --config_file=bulkloader.yaml --filename=phenotypes.csv --url=http://localhost:8080/remote_api --application=our-var --kind Phenotype
 ")
 
 (use '[rvar.ensembl]
