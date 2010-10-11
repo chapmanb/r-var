@@ -115,17 +115,10 @@
   "Provide entry points for exploring SNPs related to phenotypes."
   [:div
    [:style {:type "text/css"}
-    (gaka/css [:#selectable :list-style-type "none" :margin 0 :padding 0 :width "50%"
+    (gaka/css [:#health-select :list-style-type "none" :margin 0 :padding 0 :width "50%"
                [:li :margin "3px" :padding "0.4em" :font-size "1.4em" :height "18px"]])]
-   [:script {:type "text/javascript"}
-    (scriptjure/js 
-      (.click (.children ($ "#selectable")) 
-              (fn [] (.toggleClass ($ this) "ui-state-highlight")
-                (.removeClass (.siblings ($ this)) "ui-state-highlight")))
-      (.hover ($ "#selectable li") 
-              (fn [] (.addClass ($ this) "ui-state-hover"))
-              (fn [] (.removeClass ($ this) "ui-state-hover"))))]
-   [:ol {:id "selectable"}
+   [:script {:type "text/javascript" :src "/static/js/rvar/health.js"}]
+   [:ol {:id "health-select"}
     (for [p (get-phenotypes)]
       [:li {:class "ui-widget-content" :value p} p])]])
 

@@ -13,8 +13,8 @@ $('#var-grid').jqGrid({
   jsonReader: {repeatitems: false},
   colNames: ['Id', 'Genotype'],
   colModel : [
-      {name: 'id', index: 'id', width:150},
-      {name: 'genotype', index: 'genotype', width: 250}
+    {name: 'id', index: 'id', width:150},
+    {name: 'genotype', index: 'genotype', width: 250}
   ],
   sortname: 'id',
   sortorder: 'desc',
