@@ -2,7 +2,7 @@
 Uploading, process and store details on genomic variance.
 ")
 
-(ns rvar.variance
+(ns rvar.upload
   (:use [clojure.java.io]
         [clojure.contrib.str-utils])
   (:require [rvar.model :as model]

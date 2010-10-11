@@ -15,7 +15,7 @@
   (with-commit-transaction
     (create-entity {:kind "vargroup" :parent (:key user) :filename fname})))
 
-(defn get-variations [email]
+(defn get-user-variations [email]
   "Retrieve a lazy list of variation objects for the given user."
   (let [user (get-user email)]
     (flatten
@@ -39,6 +39,16 @@
   "Retrieve top level phenotypes from the datastore."
   (for [p-data (select "Phenotype")]
     (:name p-data)))
+
+(defn get-phenotype-vrns [phenotype]
+  "Retrieve variation data associated with the phenotype."
+  (for [phenotype-var (select "VariationPhenotype" where (= :phenotype phenotype))]
+    phenotype-var))
+
+(defn get-vrn-transcripts [vrn]
+  "Retrieve transcripts associated with a variation."
+  (for [vrn-tx (select "VariationTranscript" where (= :variation vrn))]
+    vrn-tx))
 
 ;(defentity User ()
 ;  ((email)

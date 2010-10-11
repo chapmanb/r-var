@@ -7,7 +7,8 @@
         [ring.util.servlet]
         [rvar.ring.multipart-params :as multipart]
         [rvar.templates]
-        [rvar.variance])
+        [rvar.variant]
+        [rvar.upload])
   (:require [compojure.route :as route]
             [appengine.users :as users])
   (:gen-class :extends javax.servlet.http.HttpServlet))
@@ -24,6 +25,7 @@
   (GET "/personal" request (html (personal-template request)))
   (GET "/varview" request (html (variation-template request)))
   (GET "/health" request (html (health-template request)))
+  (GET "/health/variations" request (html (trait-var-list request)))
   (GET "/data/variations" request (var-list request))
   upload-routes
   (route/not-found "Page not found"))

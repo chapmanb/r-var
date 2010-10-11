@@ -3,8 +3,7 @@
 ")
 
 (ns rvar.templates
-  (:use [clojure.contrib.json :as json]
-        [hiccup.core]
+  (:use [hiccup.core]
         [hiccup.page-helpers :only [link-to]]
         [hiccup.form-helpers :only [form-to file-upload]]
         [com.reasonr.scriptjure :as scriptjure]
@@ -78,26 +77,6 @@
         (file-upload :ufile)]
        [:button (:type "submit") "Process"]]))
 
-(defn clean-db-items [maps]
-  "Remove db-specific keys and parents from a map."
-  (for [cur-map maps]
-    (-> cur-map
-      (dissoc :key)
-      (dissoc :parent))))
-
-(defn var-list [request]
-  "Produce a JSON list of variations for the current user."
-  (let [user (.getEmail ((request :appengine/user-info) :user))
-        params (:params request)
-        rows (Integer/parseInt (get params "rows"))
-        start (* rows (- 1 (Integer/parseInt (get params "page"))))
-        vars (clean-db-items (get-variations user))
-        cur-vars (take rows (drop start vars))]
-    (println cur-vars)
-    (json/json-str {:total (count cur-vars) :page (get params "page")
-                    :records (count cur-vars)
-                    :rows cur-vars})))
-
 (defn personal-template [request]
   "Information for a logged in users personal page."
   (let [ui (users/user-info)]
@@ -113,14 +92,23 @@
 
 (defn health-template [request]
   "Provide entry points for exploring SNPs related to phenotypes."
-  [:div
-   [:style {:type "text/css"}
-    (gaka/css [:#health-select :list-style-type "none" :margin 0 :padding 0 :width "50%"
-               [:li :margin "3px" :padding "0.4em" :font-size "1.4em" :height "18px"]])]
-   [:script {:type "text/javascript" :src "/static/js/rvar/health.js"}]
-   [:ol {:id "health-select"}
-    (for [p (get-phenotypes)]
-      [:li {:class "ui-widget-content" :value p} p])]])
+  (let [std-ol (list :list-style-type "none" :margin 0 :padding 0)
+        std-li (list :margin "3px" :padding "0.4em" :font-size "1.4em" :height "18px")]
+    [:div {:class "container"}
+     [:style {:type "text/css"}
+      (gaka/css [:#health-select std-ol :width "100%" 
+                 [:li std-li]]
+                [:#vrn-select std-ol :width "100%" 
+                 [:li std-li]])]
+     [:script {:type "text/javascript" :src "/static/js/rvar/health.js"}]
+     [:div {:class "span-8"}
+       [:h4 "&nbsp;"]
+       [:ol {:id "health-select"}
+        (for [p (get-phenotypes)]
+          [:li {:class "ui-widget-content"} p])]]
+     [:div {:class "span-12 last"}
+       [:h4 {:id "vrn-header"} "Select a health topic to explore"]
+       [:ol {:id "vrn-select"}]]]))
 
 (defn- disqus-thread [identifier sname]
   [:div {:id "disqus_thread"}
@@ -154,9 +142,11 @@
 
 (defn variation-template [request]
   "Show details and discussion for a specific variation."
-  (let [sname "r-var"]
+  (let [sname "r-var"
+        vrn (-> request (:query-params) (get "vrn"))]
     [:div
-     (disqus-thread "test" sname)
+     [:h3 vrn]
+     (disqus-thread vrn sname)
      (disqus-body-end sname)]))
 
 (defn index-template [request]
@@ -166,7 +156,7 @@
      [:head (std-header title)
       [:script {:type "text/javascript"}
        (scriptjure/js (.ready ($ document)
-          (fn [] (.tabs ($ "#tabs") {:cookie {:expires 1}})
+          (fn [] (.tabs ($ "#nav-tabs") {:cookie {:expires 1}})
             (.button ($ "#user-manage a")))))]
      [:body 
       [:div {:class "container"}
@@ -178,7 +168,7 @@
           [:h2 title]]]]
       [:div {:class "container"}
        [:div {:class "span-24 last" :id "content"}
-        [:div {:id "tabs"}
+        [:div {:id "nav-tabs"}
          [:ul
           [:li (link-to "#overview" "Overview")]
           [:li (link-to "/health" "Health")]
