@@ -45,10 +45,23 @@
   (for [phenotype-var (select "VariationPhenotype" where (= :phenotype phenotype))]
     phenotype-var))
 
+(defn get-vrn-phenotypes [vrn]
+  "Retrieve phenotypes associated with a variation."
+  (distinct
+    (for [var-phn (select "VariationPhenotype" where (= :variation vrn))]
+      (:phenotype var-phn))))
+
 (defn get-vrn-transcripts [vrn]
   "Retrieve transcripts associated with a variation."
   (for [vrn-tx (select "VariationTranscript" where (= :variation vrn))]
     vrn-tx))
+
+(defn get-gene [gene-id]
+  "Gene name and description via the ensembl stable gene id."
+  (first
+    (for [gene (select "Gene" where (= :gene_stable_id gene-id))]
+      [(:name gene) (:description gene)])))
+
 
 ;(defentity User ()
 ;  ((email)

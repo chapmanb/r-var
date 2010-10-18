@@ -7,8 +7,10 @@
         [hiccup.page-helpers :only [link-to]]
         [hiccup.form-helpers :only [form-to file-upload]]
         [com.reasonr.scriptjure :as scriptjure]
+        [rvar.variant]
         [rvar.model])
   (:require [appengine.users :as users]
+            [clojure.contrib.str-utils2 :as str2]
             [gaka [core :as gaka]]))
 
 (defn user-info [request]
@@ -146,6 +148,19 @@
         vrn (-> request (:query-params) (get "vrn"))]
     [:div
      [:h3 vrn]
+     [:div {:id "phenotypes"}
+      [:h4 "Health issues"]
+      [:ul
+       (for [phn (get-vrn-phenotypes vrn)]
+         [:li phn])]]
+     [:div {:id "genes"}
+      [:h4 "Genes"]
+      [:ul
+       (for [[gname gdesc allele mod-details] (vrn-gene-changes vrn)]
+         [:li (str2/join " " [gname gdesc allele])
+         [:ul
+         (for [[cmod cmod-details] mod-details]
+           [:li (str2/join " " [cmod cmod-details])])]])]]
      (disqus-thread vrn sname)
      (disqus-body-end sname)]))
 
