@@ -51,11 +51,11 @@
   "Retrieve variation information for phenotypes."
   (with-connection (human-variation-db)
    (flatten
-    (for [ph phenotypes]
+    (doall (for [ph phenotypes]
       (let [pid (phenotype-id ph)
             sql "select * from variation_annotation where phenotype_id=?"]
         (with-query-results rs [sql pid]
-          (doall (map #(clean-annotation base-name %) rs))))))))
+          (doall (map #(clean-annotation base-name %) rs)))))))))
 
 (defn- variation-feature [vname]
   (let [sql "SELECT * from variation_feature WHERE variation_name=?"]

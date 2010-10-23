@@ -19,6 +19,8 @@ transformers:
       external_name: phenotype
     - property: study
       external_name: study
+      import_transform: 'lambda x: x.split(";")'
+      export_transform: 'lambda x: ";".join(x)'
     - property: study_type
       external_name: study_type
     - property: associated_gene
@@ -36,8 +38,12 @@ transformers:
   property_map:
     - property: name
       external_name: name
-    - property: phenotypes
-      external_name: phenotypes
+    - property: ensembl
+      external_name: ensembl
+      import_transform: 'lambda x: x.split(";")'
+      export_transform: 'lambda x: ";".join(x)'
+    - property: snpedia
+      external_name: snpedia
       import_transform: 'lambda x: x.split(";")'
       export_transform: 'lambda x: ";".join(x)'
 - kind: VariationTranscript

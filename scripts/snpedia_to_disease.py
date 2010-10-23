@@ -7,10 +7,14 @@ http://github.com/tomclegg/trait-o-matic
 
 Requires a Zemanta API key (http://developer.zemanta.com/) which should be set
 in your environmental variables as ZEMANTA_KEY.
+
+Usage:
+    snpedia_to_disease.py <phenotype CSV> <out dir> [-s <snp to start with>]
 """
 import re
 import os
 import sys
+import csv
 import time
 import urllib, urllib2
 import json
@@ -36,9 +40,10 @@ genotypes_re = [
 	re.compile(r"\| ?geno2 ?= ?\(([ACGT]+);([ACGT]+)\)"),
 	re.compile(r"\| ?geno3 ?= ?\(([ACGT]+);([ACGT]+)\)")
 ]
+snp_re  = re.compile(r"\[\[([r|R]s\d+)\]\]")
 
 def get_content(title):
-    url = content_url % title
+    url = content_url % urllib.quote(title)
     api = parse(urllib.urlopen(url)).getroot()
     for element in api.findall("query/pages/page"):
         title = element.get("title")
@@ -102,8 +107,7 @@ def process_variant_content(var_id, content):
     description = description or summary
     out_info = dict(variation=var_id, diseases=diseases,
             genotypes=genotypes, refs=pmids, description=description)
-    print json.dumps(out_info)
-    #print var_id, diseases, genotypes, pmids, description
+    return out_info
 
 def query_zemanta(search_name, search_text):
     gateway = 'http://api.zemanta.com/services/rest/0.0/'
@@ -143,11 +147,38 @@ def _get_freebase_info(output):
                 freebase_info = json.loads(urllib2.urlopen(cur_url).read())["result"]
                 yield target['title'], freebase_info
 
-def main(in_snps=None, snp_start=None):
-    if in_snps:
-        snps = in_snps.split(",")
-    else:
-        snps = title_list(categories[0])
+def snps_from_disease_file(diseases):
+    all_snps = []
+    with open(diseases) as in_handle:
+        in_handle.readline() # header
+        for line in in_handle:
+            parts = line.split(",")
+            disease = parts[0]
+            snpedia_disease  = parts[-1].rstrip()
+            snps = _snps_from_disease(snpedia_disease)
+            snps = sorted(list(set(snps)))
+            yield disease, snps
+
+def _snps_from_disease(disease):
+    content = get_content(disease)
+    return [s.lower() for s in snp_re.findall(content)]
+
+def _info_to_phenotype(info, disease=None):
+    """Reformat phenotype details from a SNP as CSV for database upload.
+    """
+    diseases = [disease] if disease else info["diseases"]
+    risk_allele = ""
+    max_mag = 0.0
+    for g in info.get("genotypes", ""):
+        if float(g.get("magnitude", 0)) > max_mag:
+            risk_allele = g.get("allele2", "")
+    for disease in diseases:
+        yield [info["variation"], disease, ";".join(info["refs"]),
+               "", "", # study_type and associated_gene
+               risk_allele,
+               "", ""] # risk_allele_freq_in_controls and p_value
+
+def _snp_details(snps, phenotype, snp_start=None):
     delay_start = snp_start is not None
     for snp in snps:
         if delay_start:
@@ -155,8 +186,29 @@ def main(in_snps=None, snp_start=None):
                 delay_start = False
         else:
             content = get_content(snp)
-            info = process_variant_content(snp, content.encode('utf-8'))
-            time.sleep(2)
+            info = process_variant_content(snp, content.encode('utf-8') if
+                    content else "")
+            print info
+            desc = info.get("description", "")
+            desc_return = [info["variation"], desc] if desc else None
+            for i, details in enumerate(_info_to_phenotype(info, phenotype)):
+                if i > 0:
+                    desc_return = None
+                yield details, desc_return
+            time.sleep(1)
+
+def main(disease_file, out_dir, snp_start=None):
+    for phenotype, snps in snps_from_disease_file(disease_file):
+        out_p = os.path.join(out_dir, phenotype.replace(" ", "_"),
+                "variation-snpedia.csv")
+        with open(out_p, "w") as p_handle:
+            p_writer = csv.writer(p_handle)
+            header = "variation,phenotype,study,study_type," \
+                     "associated_gene,associated_variant_risk_allele," \
+                     "risk_allele_freq_in_controls,p_value"
+            p_writer.writerow(header.split(","))
+            for phenotype, description in _snp_details(snps, phenotype, snp_start):
+                p_writer.writerow(phenotype)
 
 if __name__ == "__main__":
     parser = OptionParser()

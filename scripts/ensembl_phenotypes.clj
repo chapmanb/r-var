@@ -7,23 +7,16 @@
 
   2. Edit the bulkloader.yaml to match our output files.
 
-  3. lein run scripts/ensembl_phenotypes.clj script
+  3. lein run scripts/ensembl_phenotypes.clj phenotypes.csv script
 
-  4. ~/install/gae/google_appengine/appcfg.py upload_data --config_file=bulkloader.yaml --filename=variation-phenotypes.csv --url=http://localhost:8080/remote_api --application=our-var --kind VariationPhenotype
-     ~/install/gae/google_appengine/appcfg.py upload_data --config_file=bulkloader.yaml --filename=phenotypes.csv --url=http://localhost:8080/remote_api --application=our-var --kind Phenotype
+  4. ~/install/gae/google_appengine/appcfg.py upload_data --config_file=bulkloader.yaml --filename=data/variation-phenotypes.csv --url=http://localhost:8080/remote_api --application=our-var --kind VariationPhenotype
+     ~/install/gae/google_appengine/appcfg.py upload_data --config_file=bulkloader.yaml --filename=data/phenotypes.csv --url=http://localhost:8080/remote_api --application=our-var --kind Phenotype
 ")
 
 (use '[rvar.ensembl]
-     '[clojure.contrib.str-utils :only (str-join)]
+     '[clojure.java.io]
      '[clojure.contrib.duck-streams :only (with-out-writer)])
-
-; Define the various categories and specific phenotypes we are interested in
-(def phenotypes [
-  ["Multiple Sclerosis" "Multiple Sclerosis"]
-  ["Thyroid" "Autoimmune Thyroid Disease" "Thyroid cancer" "Thyroid stimulating hormone"]
-  ["Hepatitis" "Response to Hepatitis C treatment" "Hepatitis B" "Chronic Hepatitis C infection"]
-  ["Diabetes" "Type 1 diabetes" "Type 2 diabetes"]
-  ["Osteoporosis" "Osteoporosis" "Osteoporosis-related phenotypes"]])
+(require '[clojure.contrib.str-utils2 :as str2])
 
 (def csv-items [:variation :phenotype :study :study_type :associated_gene
                 :associated_variant_risk_allele :risk_allele_freq_in_controls
@@ -31,7 +24,7 @@
 
 (defn phenotype-header []
   "Retrieve list of items in the header of our variation phenotypes."
-  (let [key-to-str #(str-join "" (rest (str %)))]
+  (let [key-to-str #(str2/join "" (rest (str %)))]
     (for [item csv-items]
       (key-to-str item))))
 
@@ -40,25 +33,33 @@
   (for [item csv-items]
     (let [str-item (get vrn item "")]
       (if (contains? {:associated_gene ""} item)
-        (str-join ";" str-item)
+        (str2/join ";" str-item)
         str-item))))
 
-(defn phenotypes-to-csv [out-dir]
+(defn- file-phenotypes [p-file]
+  "Retrieve caegories and specific phenotypes of interest from CSV file."
+  (let [line-info (fn [cur-line]
+                    (let [parts (str2/split cur-line #",")
+                          phenotype (first parts)
+                          ensembl (str2/split (second parts) #";")]
+                      [phenotype ensembl]))]
+    ; Use rest to remove the first line header and iterate over remainder
+    (for [line (rest (line-seq (reader p-file)))]
+      (line-info line))))
+
+(defn phenotypes-to-csv [in-file out-dir]
   "Write out our defined phenotypes of interest to CSV for uploading."
-  (let [p-var-file (str-join "/" [out-dir "variation-phenotypes.csv"])
-        p-file (str-join "/" [out-dir "phenotypes.csv"])]
-    (with-out-writer p-var-file
-      (println (str-join "," (phenotype-header)))
-      (doseq [phenotype phenotypes]
-        (doseq [var (apply phenotype-variations phenotype)]
-          (println (str-join "," (phenotype-out var))))))
-    (with-out-writer p-file
-      (println (str-join "," ["name" "phenotypes"]))
-      (doseq [cur-p phenotypes]
-        (println (str-join "," [(first cur-p) (str-join ";" (rest cur-p))]))))))
+  (doseq [[phenotype ensembl] (file-phenotypes in-file)]
+    (let [p-file (str2/join "/" [out-dir (str2/replace phenotype " " "_")
+                                 "variation-ensembl.csv"])]
+      (make-parents p-file)
+      (with-out-writer p-file
+        (println (str2/join "," (phenotype-header)))
+        (doseq [var (apply phenotype-variations (cons phenotype ensembl))]
+          (println (str2/join "," (phenotype-out var))))))))
 
 (when *command-line-args*
-  (phenotypes-to-csv (first *command-line-args*)))
+  (apply phenotypes-to-csv *command-line-args*))
 
 ; select * from variation_annotation WHERE phenotype_id = 9;
 ; +-------------------------+--------------+--------------+-----------+-----------------+------------+-----------------+-----------------+--------------------------------+-----------------+------------------------------+-----------+
