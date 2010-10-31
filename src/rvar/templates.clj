@@ -66,8 +66,10 @@
     "![endif]-->"
     [:style {:type "text/css"}
      (gaka/css [:#user-manage :float "right"]
-               [:#header-logo :float "left" :margin-right "10px" :margin-bottom "20px"]
-               [:#header-title :float "left" :vertical-align "center"])]))
+               [:#header-logo :float "left" :margin-right "10px"
+                :margin-bottom "20px" :margin-top "20px"]
+               [:#header-title :float "left" :vertical-align "center"
+                :margin-top "20px"])]))
 
 (defn upload-genome []
   "Provide a form to upload 23andMe genomic information."
@@ -78,19 +80,6 @@
        ;[:label (:for :ufile) "Data file"]
         (file-upload :ufile)]
        [:button (:type "submit") "Process"]]))
-
-(defn personal-template [request]
-  "Information for a logged in users personal page."
-  (let [ui (users/user-info)]
-    (if (:user ui)
-      [:html
-        [:script {:type "text/javascript"
-                  :src "/static/js/rvar/variation.js"}]
-        [:table {:id "var-grid"}]
-        (upload-genome)]
-      [:html "Please "
-       (link-to (.createLoginURL (:user-service ui) "/") "login")
-       " to add your personal genome information."])))
 
 (defn health-template [request]
   "Provide entry points for exploring SNPs related to phenotypes."
@@ -112,7 +101,7 @@
        [:h4 {:id "vrn-header"} "Select a health topic to explore"]
        [:ol {:id "vrn-select"}]]]))
 
-(defn- disqus-thread [identifier sname]
+(defn- disqus-thread [identifier sname custom-js]
   [:div {:id "disqus_thread"}
    [:script {:type "text/javascript"}
     (str 
@@ -120,9 +109,12 @@
      "var disqus_developer = location.host.match(/^localhost/) ? 1 : 0;
       var disqus_callback = function () { 
         $('.dsq-request-user-name > a').each(function() {
-         console.info(this.getAttribute('href'));
-         console.info(this.text);
         });
+        $('.dsq-request-user-logout').click(function () {
+        });
+        $('.dsq-login-button').find('a').click(function () {
+        });
+     " custom-js "
       };
       (function() {
        var dsq = document.createElement('script');
@@ -161,8 +153,32 @@
          [:ul
          (for [[cmod cmod-details] mod-details]
            [:li (str2/join " " [cmod cmod-details])])]])]]
-     (disqus-thread vrn sname)
-     (disqus-body-end sname)]))
+     (disqus-thread vrn sname "")]))
+     ;(disqus-body-end sname)]))
+
+(defn personal-template [request]
+  "Information for a logged in users personal page."
+  (let [sname "r-var"
+        custom-js "$('#dsq-global-toolbar').hide();
+                   $('.dsq-options').hide();
+                   $('#dsq-comments-title').hide();
+                   $('#dsq-comments').hide();
+                   $('#dsq-pagination').hide();
+                   $('#dsq-new-post').find('h3').hide();
+                   $('.dsq-autheneticate-copy').html('Login');
+                   $('#dsq-form-area').hide();"]
+     (disqus-thread "personal" sname custom-js)))
+  ;(let [ui (users/user-info)]
+  ;  (if (:user ui)
+  ;    [:html
+  ;      [:script {:type "text/javascript"
+  ;                :src "/static/js/rvar/variation.js"}]
+  ;      [:table {:id "var-grid"}]
+  ;      (upload-genome)]
+  ;    [:html "Please "
+  ;     (link-to (.createLoginURL (:user-service ui) "/") "login")
+  ;     " to add your personal genome information."])))
+
 
 (defn index-template [request]
   "Main r-var display page."
@@ -175,7 +191,7 @@
             (.button ($ "#user-manage a")))))]
      [:body 
       [:div {:class "container"}
-       (user-info request)
+       ;(user-info request)
        [:div {:id "header" :class "span-24 last"}
         [:div {:id "header-logo"}
           [:img {:src "/static/images/aardvark.jpg" :width "120" :height "60"}]]
