@@ -29,10 +29,13 @@
 
 (defn trait-vrn-list [request]
   "A list of variants associated with a phenotypic trait."
-  (let [phenotype (-> request (:query-params) (get "phenotype"))
-        vrns-db (get-phenotype-vrns phenotype)
-        vrns (distinct (remove nil? (map #(:variation %) vrns-db)))]
-    (json/json-str {:variations vrns})))
+  (let [phenotype (-> request (:query-params) (get "phenotype"))]
+    (->> (get-phenotype-vrns phenotype)
+      (map #(:variation %))
+      (remove nil?)
+      (distinct)
+      (sort-by #(get-variant-rank %) >)
+      (#(json/json-str {:variations %})))))
 
 (defn- mod-view [mod-type mods]
   "Viewable details on an Ensembl database modification."

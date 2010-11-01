@@ -37,8 +37,9 @@
 
 (defn get-phenotypes []
   "Retrieve top level phenotypes from the datastore."
-  (for [p-data (select "Phenotype")]
-    (:name p-data)))
+  (sort
+    (for [p-data (select "Phenotype")]
+      (:name p-data))))
 
 (defn get-phenotype-vrns [phenotype]
   "Retrieve variation data associated with the phenotype."
@@ -62,6 +63,12 @@
     (for [gene (select "Gene" where (= :gene_stable_id gene-id))]
       [(:name gene) (:description gene)])))
 
+(defn get-variant-rank [vrn]
+  "Retrieve the rank score for a variant"
+  (let [db-item (first (select "VariationScore" where (= :variation vrn)))]
+    (if-not (nil? db-item)
+      (Integer/parseInt (:rank db-item))
+      0)))
 
 ;(defentity User ()
 ;  ((email)

@@ -8,7 +8,8 @@
         [hiccup.form-helpers :only [form-to file-upload]]
         [com.reasonr.scriptjure :as scriptjure]
         [rvar.variant]
-        [rvar.model])
+        [rvar.model]
+        [rvar.external])
   (:require [appengine.users :as users]
             [clojure.contrib.str-utils2 :as str2]
             [gaka [core :as gaka]]))
@@ -137,15 +138,17 @@
 (defn variation-template [request]
   "Show details and discussion for a specific variation."
   (let [sname "r-var"
-        vrn (-> request (:query-params) (get "vrn"))]
-    [:div
+        vrn (-> request (:query-params) (get "vrn"))
+        std-ol (list :list-style-type "none" :margin 0 :padding 0)
+        std-li (list :margin "3px" :padding "0.4em" :font-size "1.4em" :height "18px")]
+    [:div {:class "container"}
+     [:script {:type "text/javascript"
+               :src "/static/js/rvar/variation.js"}]
+     [:style {:type "text/css"}
+      (gaka/css [:#vrn-phenotypes std-ol :width "100%" 
+                 [:li std-li]])]
      [:h3 vrn]
-     [:div {:id "phenotypes"}
-      [:h4 "Health issues"]
-      [:ul
-       (for [phn (get-vrn-phenotypes vrn)]
-         [:li phn])]]
-     [:div {:id "genes"}
+     [:div {:class "span-14" :id "genes"}
       [:h4 "Genes"]
       [:ul
        (for [[gname gdesc allele mod-details] (vrn-gene-changes vrn)]
@@ -153,7 +156,16 @@
          [:ul
          (for [[cmod cmod-details] mod-details]
            [:li (str2/join " " [cmod cmod-details])])]])]]
-     (disqus-thread vrn sname "")]))
+     [:div {:class "span-5" :id "phenotypes"}
+      [:ul {:id "vrn-phenotypes"}
+       (for [phn (get-vrn-phenotypes vrn)]
+         [:li {:class "ui-widget-content"} phn])]]
+     [:div {:class "span-4 last" :id "vrn-links"}
+      [:ul
+       (for [link (vrn-links vrn)]
+         [:li link])]]
+     [:div {:class "span-23 last"}
+       (disqus-thread vrn sname "")]]))
      ;(disqus-body-end sname)]))
 
 (defn personal-template [request]

@@ -61,6 +61,17 @@ transformers:
       external_name: peptide_allele_string
     - property: consequence_type
       external_name: consequence_type
+- kind: VariationScore
+  connector: csv
+  property_map:
+    - property: variation
+      external_name: variation
+    - property: genescore
+      external_name: genescore
+    - property: refscore
+      external_name: refscore
+    - property: rank
+      external_name: rank
 - kind: Gene
   connector: csv
   property_map:

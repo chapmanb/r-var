@@ -6,6 +6,9 @@
 
   Other interesting things we could do with this:
     - Group variants based on gene association or publication details
+ 
+  Upload:
+  ~/install/gae/google_appengine/appcfg.py upload_data --config_file=bulkloader.yaml --url=http://localhost:8080/remote_api --application=our-var --filename=data/variation-scores.csv --kind VariationScore
 
   Usage:
          lein run rate_variants.clj [data directory]
