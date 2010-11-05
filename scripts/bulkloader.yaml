@@ -72,6 +72,15 @@ transformers:
       external_name: refscore
     - property: rank
       external_name: rank
+- kind: VariationProviders
+  connector: csv
+  property_map:
+    - property: variation
+      external_name: variation
+    - property: providers
+      external_name: providers
+      import_transform: 'lambda x: x.split(";")'
+      export_transform: 'lambda x: ";".join(x)'
 - kind: Gene
   connector: csv
   property_map:
