@@ -84,7 +84,8 @@
 
 (defn health-template [request]
   "Provide entry points for exploring SNPs related to phenotypes."
-  (let [std-ol (list :list-style-type "none" :margin 0 :padding 0)
+  (let [params (:query-params request)
+        std-ol (list :list-style-type "none" :margin 0 :padding 0)
         std-li (list :margin "3px" :padding "0.4em" :font-size "1.4em" :height "18px")]
     [:div {:class "container"}
      [:style {:type "text/css"}
@@ -99,8 +100,14 @@
         (for [p (get-phenotypes)]
           [:li {:class "ui-widget-content"} p])]]
      [:div {:class "span-12 last"}
-       [:h4 {:id "vrn-header"} "Select a health topic to explore"]
-       [:ol {:id "vrn-select"}]]]))
+       [:h3 {:id "vrn-header"} "Select a health topic to explore"]
+       [:ol {:id "vrn-select"}]]
+     [:div {:class "span-6" :id "back-page"}]
+     [:div {:class "span-6 last" :id "for-page"}]
+     [:input {:type "hidden" :id "cur-phn" :value (get params "phenotype" "")}]
+     [:input {:type "hidden" :id "cur-start" :value (get params "start" "0")}]
+     [:input {:type "hidden" :id "cur-limit" :value (get params "limit" "10")}]
+     ]))
 
 (defn- disqus-thread [identifier sname custom-js]
   [:div {:id "disqus_thread"}
@@ -206,7 +213,7 @@
 
 (defn index-template [request]
   "Main r-var display page."
-  (let [title "r-var: exploring our genomic variability"]
+  (let [title "Ourvar: exploring our genomic variability"]
     [:html
      [:head (std-header title)
       [:script {:type "text/javascript"}
