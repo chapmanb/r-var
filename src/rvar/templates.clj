@@ -191,6 +191,18 @@
   ;     (link-to (.createLoginURL (:user-service ui) "/") "login")
   ;     " to add your personal genome information."])))
 
+(defn landing-template [request]
+  [:div {:id "overview" :class "container span-23 last"}
+   [:script {:type "text/javascript" :src "/static/js/rvar/landing.js"}]
+   [:div {:class "span-21 last"}
+     [:p "Our genomes are a wonderful array of unique variations.
+          Access to our own personal sequences gives us the tools
+          to explore individual responses to disease and everyday life."]]
+  [:div {:class "span-7"} "Inform yourself about genetic variability."]
+  [:div {:class "span-7"} "Share your knowledge of how a variation influences your life and treatment."]
+  [:div {:class "span-7 last"} "Discover approaches you could take to improve your health, based on your personal genome."]
+  [:div {:id "getting-started" :class "span-10 last"}
+    [:a {:href "/health"} "Choose a health topic of interest"]]])
 
 (defn index-template [request]
   "Main r-var display page."
@@ -217,5 +229,4 @@
           [:li (link-to "/health" "Health")]
           [:li (link-to "/varview" "Variations")]
           [:li (link-to "/personal" "Personal")]]
-         [:div {:id "overview"}
-          ""]]]]]]]))
+         (landing-template request)]]]]]]))
