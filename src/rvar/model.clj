@@ -41,10 +41,11 @@
     (for [p-data (select "Phenotype")]
       (:name p-data))))
 
-(defn get-phenotype-vrns [phenotype]
+(defn get-phenotype-vrns [phn]
   "Retrieve variation data associated with the phenotype."
-  (for [phenotype-var (select "VariationPhenotype" where (= :phenotype phenotype))]
-    phenotype-var))
+  (for [phn-var (select "VariationScore" where (= :phenotype phn)
+                        order-by (:rank :desc))]
+      phn-var))
 
 (defn get-vrn-phenotypes [vrn]
   "Retrieve phenotypes associated with a variation."

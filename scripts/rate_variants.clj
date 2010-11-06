@@ -55,21 +55,23 @@
   "Provide summarized score for variations based on gene and ref counts."
   (let [scores [(get gene-score vrn 0) (get ref-score vrn 0)]
         rank (vrn-rank scores)]
-    (cons vrn (conj scores rank))))
+    (conj scores rank)))
 
 (defn write-ratings [out-file vrn-file gene-score ref-score]
   "Write out a set of ratings for each variation."
-  (let [header ["variation" "genescore" "refscore" "rank"]
+  (let [header ["variation" "phenotype" "genescore" "refscore" "rank"]
         vrns (fn [rdr]
                (distinct
                   (for [line (rest (line-seq rdr))]
-                    (first (str2/split line #",")))))]
+                    (let [[vrn phn & _] (str2/split line #",")]
+                      [vrn phn]))))]
     (with-open [rdr (reader vrn-file)
                 w (writer out-file)]
       (.write w (str (str2/join "," header) \newline))
-      (doseq [vrn (vrns rdr)]
-        (let [score-line (vrn-scores vrn gene-score ref-score)]
-          (.write w (str (str2/join "," score-line) \newline)))))))
+      (doseq [[vrn phn] (vrns rdr)]
+        (let [score-line (vrn-scores vrn gene-score ref-score)
+              out-line (cons vrn (cons phn score-line))]
+          (.write w (str (str2/join "," out-line) \newline)))))))
 
 (when *command-line-args*
   (let [data-dir (first *command-line-args*)

@@ -30,11 +30,11 @@
 (defn trait-vrn-list [request]
   "A list of variants associated with a phenotypic trait."
   (let [phenotype (-> request (:query-params) (get "phenotype"))]
-    (->> (get-phenotype-vrns phenotype)
+    (->> (take 10 (get-phenotype-vrns phenotype))
       (map #(:variation %))
       (remove nil?)
       (distinct)
-      (sort-by #(get-variant-rank %) >)
+      ;(sort-by #(get-variant-rank %) >)
       (#(json/json-str {:variations %})))))
 
 (defn- mod-view [mod-type mods]

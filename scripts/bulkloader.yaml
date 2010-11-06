@@ -66,12 +66,17 @@ transformers:
   property_map:
     - property: variation
       external_name: variation
+    - property: phenotype
+      external_name: phenotype
     - property: genescore
       external_name: genescore
+      import_transform: 'lambda x: float(x)'
     - property: refscore
       external_name: refscore
+      import_transform: 'lambda x: float(x)'
     - property: rank
       external_name: rank
+      import_transform: 'lambda x: float(x)'
 - kind: VariationProviders
   connector: csv
   property_map:
