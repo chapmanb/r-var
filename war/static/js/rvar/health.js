@@ -5,7 +5,18 @@
 var display_trait_vars = function(term, start, limit) {
   $("#nav-tabs").tabs('url', 1, '/health?phenotype=' + term + 
                                 '&start=' + start + '&limit=' + limit);
+  $("#cur-phn").attr("value", term);
+  $("#cur-start").attr("value", start);
+  $("#cur-limit").attr("value", limit);
   $("#vrn-header").html(term);
+  if (start > 0) {
+    $("#vrn-header-page").html("(Page " + (start / limit + 1) + ")");
+  } else {
+    $("#vrn-header-page").html("");
+
+  }
+  $("#vrn-less-button").show();
+  $("#vrn-more-button").show();
   var vrn_ol = $("#vrn-select");
   $(vrn_ol).children("li").remove();
   $.getJSON("/health/variations", 
@@ -25,21 +36,19 @@ var display_trait_vars = function(term, start, limit) {
         $("#nav-tabs").tabs('url', 2, '/varview?vrn=' + $(this).html());
         $("#nav-tabs").tabs('select', 2);
       });
-      if (data.hasless) {
-        $("#back-page").addClass("ui-widget-content").html("<<");
-      } else {
-        $("#back-page").removeClass("ui-widget-content").html("");
-      }
-      if (data.hasmore) {
-        $("#for-page").addClass("ui-widget-content").html(">>").click(
-          function() {
-            console.info("forward")
-          });
-      } else {
-        $("#for-page").removeClass("ui-widget-content").html("");
-      }
-    }
-  );
+      $("#vrn-more-button").button("option", "disabled", !data.hasmore);
+      $("#vrn-less-button").button("option", "disabled", !data.hasless);
+    });
+};
+// Show variations based on our current phenotype and position
+// adjust handles paging: 1 for forward, -1 for back, 0 for current
+var display_cur_vrns_with_adjust = function(adjust) {
+  var cur_phn = $("#cur-phn").attr("value"),
+      limit = parseInt($("#cur-limit").attr("value")),
+      cur_start = parseInt($("#cur-start").attr("value")) + adjust * limit;
+  if (cur_phn != "") {
+    display_trait_vars(cur_phn, cur_start, limit);
+  }
 };
 
 $(document).ready(function() {
@@ -49,14 +58,22 @@ $(document).ready(function() {
     $(this).toggleClass("ui-state-highlight");
     display_trait_vars($(this).html(), 0, 10);
   });
+  $("#vrn-less-button").button({
+    icons: {primary: "ui-icon-arrowthick-1-w"},
+    text: false
+  }).hide().click(function() {
+    display_cur_vrns_with_adjust(-1);
+  });
+  $("#vrn-more-button").button({
+    icons: {primary: "ui-icon-arrowthick-1-e"},
+    text: false
+  }).hide().click(function() {
+    display_cur_vrns_with_adjust(1);
+  });
   $("#health-select").children().hover(function() {
     $(this).addClass("ui-state-hover");
   }, function() {
     $(this).removeClass("ui-state-hover");
   });
-  var cur_phn = $("#cur-phn").attr("value");
-  if (cur_phn != "") {
-    display_trait_vars(cur_phn, $("#cur-start").attr("value"),
-                       $("#cur-limit").attr("limit"));
-  }
+  display_cur_vrns_with_adjust(0);
 });

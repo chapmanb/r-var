@@ -54,7 +54,7 @@
     [:script {:type "text/javascript" 
               :src "/static/js/jquery.jqGrid.min.js"}]
     [:link {:type "text/css" :rel "stylesheet" :media "screen" 
-            :href "/static/css/Aristo/jquery-ui-1.8rc3.custom.css"}]
+            :href "/static/css/Aristo/jquery-ui-1.8.5.custom.css"}]
     [:link {:type "text/css" :rel "stylesheet" :media "screen" 
             :href "/static/css/ui.jqgrid.css"}]
     [:link {:type "text/css" :rel "stylesheet" :media "screen" 
@@ -91,8 +91,12 @@
      [:style {:type "text/css"}
       (gaka/css [:#health-select std-ol :width "100%" 
                  [:li std-li]]
-                [:#vrn-select std-ol :width "100%" 
-                 [:li std-li]])]
+                [:#vrn-select std-ol :width "100%" :clear "both"
+                 [:li std-li]]
+                [:#vrn-header :float "left" :margin-right "10px"]
+                [:#vrn-header-page :float "left"]
+                [:#vrn-less-button :float "left" :margin-right "20px"]
+                [:#vrn-more-button :float "right"])]
      [:script {:type "text/javascript" :src "/static/js/rvar/health.js"}]
      [:div {:class "span-8"}
        [:h4 "&nbsp;"]
@@ -100,10 +104,11 @@
         (for [p (get-phenotypes)]
           [:li {:class "ui-widget-content"} p])]]
      [:div {:class "span-12 last"}
-       [:h3 {:id "vrn-header"} "Select a health topic to explore"]
-       [:ol {:id "vrn-select"}]]
-     [:div {:class "span-6" :id "back-page"}]
-     [:div {:class "span-6 last" :id "for-page"}]
+      [:button {:id "vrn-less-button"}]
+      [:h3 {:id "vrn-header"} "Select a health topic to explore"]
+      [:div {:id "vrn-header-page"}]
+      [:button {:id "vrn-more-button"}] ;:class "ui-icon ui-icon-circle-arrow-e"}]
+      [:ol {:id "vrn-select"}]]
      [:input {:type "hidden" :id "cur-phn" :value (get params "phenotype" "")}]
      [:input {:type "hidden" :id "cur-start" :value (get params "start" "0")}]
      [:input {:type "hidden" :id "cur-limit" :value (get params "limit" "10")}]
@@ -155,7 +160,7 @@
       (gaka/css [:#vrn-phenotypes std-ol :width "100%" 
                  [:li std-li]])]
      [:h3 vrn]
-     [:div {:class "span-14" :id "genes"}
+     [:div {:class "span-12" :id "genes"}
       [:h4 "Genes"]
       [:ul
        (for [[gname gdesc allele mod-details] (vrn-gene-changes vrn)]
@@ -163,7 +168,7 @@
          [:ul
          (for [[cmod cmod-details] mod-details]
            [:li (str2/join " " [cmod cmod-details])])]])]]
-     [:div {:class "span-5" :id "phenotypes"}
+     [:div {:class "span-4" :id "phenotypes"}
       [:ul {:id "vrn-phenotypes"}
        (for [phn (get-vrn-phenotypes vrn)]
          [:li {:class "ui-widget-content"} phn])]]
@@ -171,7 +176,7 @@
       [:ul
        (for [link (vrn-links vrn)]
          [:li link])]]
-     [:div {:class "span-23 last"}
+     [:div {:class "span-20 last"}
        (disqus-thread vrn sname "")]]))
      ;(disqus-body-end sname)]))
 
@@ -201,15 +206,22 @@
 (defn landing-template [request]
   [:div {:id "overview" :class "container span-23 last"}
    [:script {:type "text/javascript" :src "/static/js/rvar/landing.js"}]
-   [:div {:class "span-21 last"}
+   [:style {:type "text/css"}
+    (gaka/css [:#statement :font-size "18px" :font-style "italic"]
+              [:#highlights :font-size "16px"]
+              [:#getting-started :margin-top "50px"])]
+   [:div {:id "statement" :class "span-20 last"}
      [:p "Our genomes are a wonderful array of unique variations.
           Access to our own personal sequences gives us the tools
-          to explore individual responses to disease and everyday life."]]
-  [:div {:class "span-7"} "Inform yourself about genetic variability."]
-  [:div {:class "span-7"} "Share your knowledge of how a variation influences your life and treatment."]
-  [:div {:class "span-7 last"} "Discover approaches you could take to improve your health, based on your personal genome."]
-  [:div {:id "getting-started" :class "span-10 last"}
-    [:a {:href "/health"} "Choose a health topic of interest"]]])
+          to explore individual responses to disease and every day life.
+          Ourvar provides you with information to make informed decisions
+          about genetic sequencing."]]
+  [:div {:id "highlights" :class "preprend-top append-bottom"}
+    [:div {:class "span-6 colborder"} "Inform yourself about genetic variability and available testing options."]
+    [:div {:class "span-6 colborder"} "Share your knowledge of how a variation influences your life and treatment."]
+    [:div {:class "span-6 last"} "Discover approaches to improve your health, based on your personal genome."]]
+  [:div {:id "getting-started" :class "prepend-top prepend-7 span-6 last"}
+    [:a {:href "/health"} "Choose a health topic"]]])
 
 (defn index-template [request]
   "Main r-var display page."
