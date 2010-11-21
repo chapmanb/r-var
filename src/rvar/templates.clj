@@ -111,8 +111,7 @@
       [:ol {:id "vrn-select"}]]
      [:input {:type "hidden" :id "cur-phn" :value (get params "phenotype" "")}]
      [:input {:type "hidden" :id "cur-start" :value (get params "start" "0")}]
-     [:input {:type "hidden" :id "cur-limit" :value (get params "limit" "10")}]
-     ]))
+     [:input {:type "hidden" :id "cur-limit" :value (get params "limit" "10")}]]))
 
 (defn- disqus-thread [identifier sname custom-js]
   [:div {:id "disqus_thread"}
@@ -150,17 +149,15 @@
 (defn variation-template [request]
   "Show details and discussion for a specific variation."
   (let [sname "r-var"
-        vrn (-> request (:query-params) (get "vrn"))
-        std-ol (list :list-style-type "none" :margin 0 :padding 0)
-        std-li (list :margin "3px" :padding "0.4em" :font-size "1.4em" :height "18px")]
+        vrn (-> request (:query-params) (get "vrn" "rs6604026"))]
     [:div {:class "container"}
      [:script {:type "text/javascript"
                :src "/static/js/rvar/variation.js"}]
      [:style {:type "text/css"}
-      (gaka/css [:#vrn-phenotypes std-ol :width "100%" 
-                 [:li std-li]])]
+      (gaka/css [:#vrn-pubs [:h4 :text-align "center"]]
+                [:#vrn-links [:h4 :text-align "center"]])]
      [:h3 vrn]
-     [:div {:class "span-12" :id "genes"}
+     [:div {:class "span-9" :id "genes"}
       [:h4 "Genes"]
       [:ul
        (for [[gname gdesc allele mod-details] (vrn-gene-changes vrn)]
@@ -168,14 +165,19 @@
          [:ul
          (for [[cmod cmod-details] mod-details]
            [:li (str2/join " " [cmod cmod-details])])]])]]
-     [:div {:class "span-4" :id "phenotypes"}
-      [:ul {:id "vrn-phenotypes"}
-       (for [phn (get-vrn-phenotypes vrn)]
-         [:li {:class "ui-widget-content"} phn])]]
+     [:div {:class "span-7" :id "vrn-pubs"}
+      [:h4 "Publications"]]
      [:div {:class "span-4 last" :id "vrn-links"}
+      [:h4 "Links"]
       [:ul
-       (for [link (vrn-links vrn)]
-         [:li link])]]
+       [:div "More info"
+        (for [link (vrn-links vrn)]
+          [:li link])]
+       (let [pro-links (vrn-providers vrn)]
+         (if (> (count pro-links) 0)
+           [:div "Tested by"
+            (for [pro-link pro-links]
+              [:li pro-link])]))]]
      [:div {:class "span-20 last"}
        (disqus-thread vrn sname "")]]))
      ;(disqus-body-end sname)]))

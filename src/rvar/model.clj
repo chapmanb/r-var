@@ -58,6 +58,12 @@
   (for [vrn-tx (select "VariationTranscript" where (= :variation vrn))]
     vrn-tx))
 
+(defn get-vrn-providers [vrn]
+  "Companies that provide genotyping of a variation."
+  (let [vrn-pro (first (select "VariationProviders" where (= :variation vrn)))]
+    (if-not (nil? vrn-pro)
+      (:providers vrn-pro))))
+
 (defn get-gene [gene-id]
   "Gene name and description via the ensembl stable gene id."
   (first

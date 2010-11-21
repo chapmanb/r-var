@@ -4,18 +4,6 @@
 // External links from the variation
 $("#vrn-links").find("li").button();
 
-$("#vrn-phenotypes").children().click(function() {
-  $(this).siblings().removeClass("ui-state-highlight");
-  $(this).toggleClass("ui-state-highlight");
-});
-$("#vrn-phenotypes").children().hover(function() {
-  $(this).addClass("ui-state-hover");
-}, function() {
-  $(this).removeClass("ui-state-hover");
-});
-
-
-
 // Display details on a select variance of interest
 var var_display = function (id) {
   console.info(id);
