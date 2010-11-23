@@ -17,6 +17,7 @@
                      [com.google.appengine/appengine-local-runtime "1.3.7"]
                      [com.google.appengine/appengine-api-stubs "1.3.7"]
                      [vimclojure/server "2.2.0"]
+                     [clojure-csv/clojure-csv "1.2.0"]
                      [ring/ring-core "0.2.5"]]
   :repositories [["maven-gae-plugin" "http://maven-gae-plugin.googlecode.com/svn/repository"]]
   :compile-path "war/WEB-INF/classes"
