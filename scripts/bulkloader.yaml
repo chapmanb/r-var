@@ -86,6 +86,19 @@ transformers:
       external_name: providers
       import_transform: 'lambda x: x.split(";")'
       export_transform: 'lambda x: ";".join(x)'
+- kind: VariationLit
+  connector: csv
+  property_map:
+    - property: variation
+      external_name: variation
+    - property: phenotype
+      external_name: phenotype
+    - property: numrefs
+      external_name: numrefs
+      import_transform: 'lambda x: int(x)'
+    - property: keywords
+      external_name: keywords
+      import_transform: db.Text
 - kind: Gene
   connector: csv
   property_map:

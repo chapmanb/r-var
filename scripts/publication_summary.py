@@ -52,12 +52,13 @@ class KeywordRetriever:
         self._cache = {}
         self._fb_cache = {}
         self._want_topics = set(["medicine", "biology", "measurement_unit",
-                "education", "chemistry", "award"])
+                "education", "chemistry", "award", "physics"])
         self._avoid_topics = set(["location", "organization", "business", "book",
                 "freebase", "internet", "aviation", "computer", "people",
                 "fictional_universe", "law", "geography", "religion",
                 "architecture", "language", "sports", "baseball",
-                "metropolitan_transit", "media_common", "film"])
+                "metropolitan_transit", "media_common", "film", "event",
+                "transportation", "food", "finance", "spaceflight"])
 
     def get_kwds(self, pubmed_id):
         try:
@@ -126,7 +127,8 @@ class KeywordRetriever:
             try:
                 return self._fb_cache[cur_url]
             except KeyError:
-                freebase_info = json.loads(self._safe_urlopen(cur_url))["result"]
+                freebase_info = json.loads(self._safe_urlopen(cur_url)).get(
+                        "result", None)
                 self._fb_cache[cur_url] = freebase_info
                 return freebase_info
 

@@ -167,6 +167,7 @@
            [:li (str2/join " " [cmod cmod-details])])]])]]
      [:div {:class "span-7" :id "vrn-pubs"}
       [:h4 "Publications"]]
+     (println (reverse (sort-by second (get-variant-keywords vrn))))
      [:div {:class "span-4 last" :id "vrn-links"}
       [:h4 "Links"]
       [:ul

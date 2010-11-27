@@ -2,7 +2,8 @@
  Data store models representing objects of interest with key/val pairs.
 ")
 (ns rvar.model
-  (:use [appengine.datastore]))
+  (:use [appengine.datastore])
+  (:require [clojure.contrib.json :as json]))
 
 (defn get-user [email]
   "Get or create a database user with the given email address."
@@ -76,6 +77,10 @@
     (if-not (nil? db-item)
       (Integer/parseInt (:rank db-item))
       0)))
+
+(defn get-variant-keywords [vrn]
+  (let [db-item (first (select "VariationLit" where (= :variation vrn)))]
+    (json/read-json (.getValue (:keywords db-item)))))
 
 ;(defentity User ()
 ;  ((email)
