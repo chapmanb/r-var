@@ -66,10 +66,12 @@
 
 (defn vrn-gene-changes [vrn]
   "A summary of genes affected by a variant, with change details."
-  (let [mods-by-gene (group-by #(:gene_stable_id %) (get-vrn-transcripts vrn))]
+  (let [mods-by-gene (group-by #(:gene_stable_id %) (get-vrn-transcripts vrn))
+        split-change #(str2/split % #"/")]
     (for [gene (keys mods-by-gene)]
       (let [[gname gdesc] (get-gene gene)
-            allele (:allele (first (get mods-by-gene gene)))
-            mods-by-type (group-by #(:consequence_type %) (get mods-by-gene gene))
+            txs (get mods-by-gene gene)
+            allele (:allele (first txs))
+            mods-by-type (group-by #(:consequence_type %) txs)
             mod-details (distinct (map #(apply mod-view %) mods-by-type))]
-        [gname gdesc allele mod-details]))))
+        [gene gname gdesc allele mod-details]))))

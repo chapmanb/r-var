@@ -49,14 +49,14 @@
               :src "/static/js/jquery-ui-1.8.4.custom.min.js"}]
     [:script {:type "text/javascript" 
               :src "/static/js/jquery.cookie.js"}]
-    [:script {:type "text/javascript" 
-              :src "/static/js/grid.locale-en.js"}]
-    [:script {:type "text/javascript" 
-              :src "/static/js/jquery.jqGrid.min.js"}]
+    ;[:script {:type "text/javascript" 
+    ;          :src "/static/js/grid.locale-en.js"}]
+    ;[:script {:type "text/javascript" 
+    ;          :src "/static/js/jquery.jqGrid.min.js"}]
     [:link {:type "text/css" :rel "stylesheet" :media "screen" 
             :href "/static/css/Aristo/jquery-ui-1.8.5.custom.css"}]
-    [:link {:type "text/css" :rel "stylesheet" :media "screen" 
-            :href "/static/css/ui.jqgrid.css"}]
+    ;[:link {:type "text/css" :rel "stylesheet" :media "screen" 
+    ;        :href "/static/css/ui.jqgrid.css"}]
     [:link {:type "text/css" :rel "stylesheet" :media "screen" 
             :href "/static/css/blueprint/screen.css"}]
     [:link {:type "text/css" :rel "stylesheet" :media "print" 
@@ -72,6 +72,13 @@
                [:#header-title :float "left" :vertical-align "center"
                 :margin-top "20px"])]))
 
+(def std-footer
+  [:div {:class "container" :id "footer"}
+   [:div {:class "prepend-21 span-3 last"}
+     [:a {:rel "license" :href "http://creativecommons.org/licenses/by/3.0/"}
+      [:img {:alt "Creative Commons License" :style "border-width:0" 
+             :src"http://i.creativecommons.org/l/by/3.0/88x31.png"}]]]])
+
 (defn upload-genome []
   "Provide a form to upload 23andMe genomic information."
   (form-to {:enctype "multipart/form-data"} [:post "/upload/23andme"]
@@ -86,7 +93,7 @@
   "Provide entry points for exploring SNPs related to phenotypes."
   (let [params (:query-params request)
         std-ol (list :list-style-type "none" :margin 0 :padding 0)
-        std-li (list :margin "3px" :padding "0.4em" :font-size "1.4em" :height "18px")]
+        std-li (list :margin "1px" :padding "0.4em" :font-size "1.4em" :height "18px")]
     [:div {:class "container"}
      [:style {:type "text/css"}
       (gaka/css [:#health-select std-ol :width "100%" 
@@ -149,36 +156,51 @@
 (defn variation-template [request]
   "Show details and discussion for a specific variation."
   (let [sname "r-var"
-        vrn (-> request (:query-params) (get "vrn" "rs6604026"))]
+        vrn (-> request (:query-params) (get "vrn" "rs6604026"))
+        link-portal-css (list 
+                          [:ul :list-style-type "none" :margin 0 :padding 0]
+                          [:li :margin "2px" :padding "0.4em" :font-size "1.2em" :height "15px"
+                           [:a :text-decoration "none"]
+                           [:a:hover :color "#5f83b9"]]
+                          [:h4 :text-align "center"])]
     [:div {:class "container"}
+     [:style {:type "text/css"}
+      (gaka/css [:#vrn-pubs link-portal-css]
+                [:#vrn-links link-portal-css]
+                [:#vrn-links-info :margin-bottom "5px"]
+                [:#genome link-portal-css])]
      [:script {:type "text/javascript"
                :src "/static/js/rvar/variation.js"}]
-     [:style {:type "text/css"}
-      (gaka/css [:#vrn-pubs [:h4 :text-align "center"]]
-                [:#vrn-links [:h4 :text-align "center"]])]
      [:h3 vrn]
-     [:div {:class "span-9" :id "genes"}
-      [:h4 "Genes"]
+     [:div {:class "span-8 ui-widget ui-widget-content" :id "genome"}
+      [:h4 {:class "ui-helper-reset ui-widget-header"} "Genome"]
       [:ul
-       (for [[gname gdesc allele mod-details] (vrn-gene-changes vrn)]
-         [:li (str2/join " " [gname gdesc allele])
-         [:ul
-         (for [[cmod cmod-details] mod-details]
-           [:li (str2/join " " [cmod cmod-details])])]])]]
-     [:div {:class "span-7" :id "vrn-pubs"}
-      [:h4 "Publications"]]
-     (println (reverse (sort-by second (get-variant-keywords vrn))))
+       (for [[eid gname gdesc allele mod-details] (vrn-gene-changes vrn)]
+         [:div
+         [:li (ensembl-gene-link eid (str2/join " " [gname gdesc allele]))]
+          [:br]
+         [:div
+          (str2/join ", "
+                     (for [[cmod cmod-details] mod-details]
+                       (str2/join " " [cmod cmod-details])))]])]]
+     [:div {:class "span-8 ui-widget ui-widget-content" :id "vrn-pubs"}
+      [:h4 {:class "ui-helper-reset ui-widget-header"} "Publication keywords"]
+      [:ul
+       (for [[kwd _] (take 10 (reverse (sort-by second (get-variant-keywords vrn))))]
+         [:li (wikipedia-link (name kwd))])]]
      [:div {:class "span-4 last" :id "vrn-links"}
-      [:h4 "Links"]
-      [:ul
-       [:div "More info"
+      [:div {:class "ui-widget ui-widget-content" :id "vrn-links-info"}
+       [:h4 {:class "ui-helper-reset ui-widget-header"} "More information"]
+       [:ul
         (for [link (vrn-links vrn)]
-          [:li link])]
+          [:li link])]]
        (let [pro-links (vrn-providers vrn)]
-         (if (> (count pro-links) 0)
-           [:div "Tested by"
-            (for [pro-link pro-links]
-              [:li pro-link])]))]]
+        (if (> (count pro-links) 0)
+          [:div {:class "ui-helper-reset ui-widget ui-widget-content"}
+            [:h4 {:class "ui-helper-reset ui-widget-header"} "Testing providers"]
+            [:ul
+             (for [pro-link pro-links]
+               [:li pro-link])]]))]
      [:div {:class "span-20 last"}
        (disqus-thread vrn sname "")]]))
      ;(disqus-body-end sname)]))
@@ -234,7 +256,7 @@
       [:script {:type "text/javascript"}
        (scriptjure/js (.ready ($ document)
           (fn [] (.tabs ($ "#nav-tabs") {:cookie {:expires 1}})
-            (.button ($ "#user-manage a")))))]
+            (.button ($ "#user-manage a")))))]]
      [:body 
       [:div {:class "container"}
        ;(user-info request)
@@ -251,4 +273,5 @@
           [:li (link-to "/health" "Health")]
           [:li (link-to "/varview" "Variations")]
           [:li (link-to "/personal" "Personal")]]
-         (landing-template request)]]]]]]))
+         (landing-template request)]]]
+     std-footer]]))

@@ -27,8 +27,10 @@ var display_trait_vars = function(term, start, limit) {
         .appendTo(vrn_ol);
       });
       $(vrn_ol).children().hover(function() {
+        $(this).css("cursor", "hand");
         $(this).addClass("ui-state-hover");
       }, function() {
+        $(this).css("cursor", "pointer");
         $(this).removeClass("ui-state-hover");
       });
       // On click, load variation info in the appropriate tab
@@ -71,8 +73,10 @@ $(document).ready(function() {
     display_cur_vrns_with_adjust(1);
   });
   $("#health-select").children().hover(function() {
+    $(this).css("cursor", "hand");
     $(this).addClass("ui-state-hover");
   }, function() {
+    $(this).css("cursor", "pointer");
     $(this).removeClass("ui-state-hover");
   });
   display_cur_vrns_with_adjust(0);

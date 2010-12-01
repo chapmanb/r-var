@@ -5,7 +5,9 @@
 (ns rvar.external
   (:use [clojure.string :only [lower-case]]
         [hiccup.core]
-        [rvar.model]))
+        [ring.util.codec :only [url-encode]]
+        [rvar.model])
+  (:require [clojure.contrib.str-utils2 :as str]))
 
 (defn- ext-link [url content]
   [:a {:href url :target "_blank"} content])
@@ -24,3 +26,13 @@
       "deCODEme" (ext-link "http://demo.decodeme.com/snp-look-up" pro)
       "Navigenics" (ext-link "http://www.navigenics.com/" pro))))
 
+(defn wikipedia-link [term]
+  "Link to wikipedia articles on terms of interest."
+  (-> term
+    (str/replace " ", "_")
+    (url-encode)
+    (#(ext-link (str "http://en.wikipedia.org/wiki/" %) term))))
+
+(defn ensembl-gene-link [eid text]
+  "Link to ensembl gene information."
+  (ext-link (str "http://www.ensembl.org/Homo_sapiens/Gene/Summary?g=" eid) text))
