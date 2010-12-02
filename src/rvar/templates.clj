@@ -153,57 +153,72 @@
        "(document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
     }());")])
 
+(defn- gene-changes-template [vrn]
+  "Display of gene changes associated with a variation"
+  [:ul {:id "gene-allele"}
+  (for [[allele gene-info] (vrn-gene-changes vrn)]
+    [:li allele
+    [:ul {:id "gene-name"}
+     (for [[_ eid gname gdesc mod-details] gene-info]
+       [:li (ensembl-gene-link eid (str2/join " " [gname gdesc]))
+       [:ul {:id "gene-mods"}
+        (for [[cmod cmod-details] mod-details]
+          [:li (str2/join " " [cmod cmod-details])])]])]])])
+
 (defn variation-template [request]
   "Show details and discussion for a specific variation."
   (let [sname "r-var"
         vrn (-> request (:query-params) (get "vrn" "rs6604026"))
+        link-style (list [:a :text-decoration "none"] [:a:hover :color "#5f83b9"])
         link-portal-css (list 
                           [:ul :list-style-type "none" :margin 0 :padding 0]
                           [:li :margin "2px" :padding "0.4em" :font-size "1.2em" :height "15px"
-                           [:a :text-decoration "none"]
-                           [:a:hover :color "#5f83b9"]]
+                           link-style]
                           [:h4 :text-align "center"])]
     [:div {:class "container"}
      [:style {:type "text/css"}
       (gaka/css [:#vrn-pubs link-portal-css]
                 [:#vrn-links link-portal-css]
                 [:#vrn-links-info :margin-bottom "5px"]
-                [:#genome link-portal-css])]
+                [:#genome 
+                 [:ul :list-style-type "none" :padding-left "10px"]
+                 [:li link-style]
+                 [:#gene-allele [:li :font-size "15px"]]
+                 [:#gene-name [:li :font-size "13px"]]
+                 [:#gene-mods [:li :font-size "11px"]]]
+                [:#vrn-accordion [:div.ui-accordion-content 
+                                  :padding-left "10px" :padding-right "10px"]]
+                )]
      [:script {:type "text/javascript"
                :src "/static/js/rvar/variation.js"}]
-     [:h3 vrn]
-     [:div {:class "span-8 ui-widget ui-widget-content" :id "genome"}
-      [:h4 {:class "ui-helper-reset ui-widget-header"} "Genome"]
-      [:ul
-       (for [[eid gname gdesc allele mod-details] (vrn-gene-changes vrn)]
-         [:div
-         [:li (ensembl-gene-link eid (str2/join " " [gname gdesc allele]))]
-          [:br]
-         [:div
-          (str2/join ", "
-                     (for [[cmod cmod-details] mod-details]
-                       (str2/join " " [cmod cmod-details])))]])]]
-     [:div {:class "span-8 ui-widget ui-widget-content" :id "vrn-pubs"}
+     [:div {:class "span-6 ui-widget ui-widget-content" :id "vrn-pubs"}
       [:h4 {:class "ui-helper-reset ui-widget-header"} "Publication keywords"]
       [:ul
        (for [[kwd _] (take 10 (reverse (sort-by second (get-variant-keywords vrn))))]
          [:li (wikipedia-link (name kwd))])]]
-     [:div {:class "span-4 last" :id "vrn-links"}
-      [:div {:class "ui-widget ui-widget-content" :id "vrn-links-info"}
-       [:h4 {:class "ui-helper-reset ui-widget-header"} "More information"]
-       [:ul
-        (for [link (vrn-links vrn)]
-          [:li link])]]
-       (let [pro-links (vrn-providers vrn)]
-        (if (> (count pro-links) 0)
-          [:div {:class "ui-helper-reset ui-widget ui-widget-content"}
-            [:h4 {:class "ui-helper-reset ui-widget-header"} "Testing providers"]
-            [:ul
-             (for [pro-link pro-links]
-               [:li pro-link])]]))]
+     [:div {:id "vrn-accordion" :class "span-14 last"}
+      [:h3 [:a {:href "#"} vrn]]
+      [:div 
+       [:div {:class "span-9 ui-widget ui-widget-content" :id "genome"}
+        [:h4 {:class "ui-helper-reset ui-widget-header"} "Genome"]
+        (gene-changes-template vrn)]
+       [:div {:class "span-4 last" :id "vrn-links"}
+        [:div {:class "ui-widget ui-widget-content" :id "vrn-links-info"}
+         [:h4 {:class "ui-helper-reset ui-widget-header"} "More information"]
+         [:ul
+          (for [link (vrn-links vrn)]
+            [:li link])]]
+         (let [pro-links (vrn-providers vrn)]
+          (if (> (count pro-links) 0)
+            [:div {:class "ui-helper-reset ui-widget ui-widget-content"}
+              [:h4 {:class "ui-helper-reset ui-widget-header"} "Testing providers"]
+              [:ul
+               (for [pro-link pro-links]
+                 [:li pro-link])]]))]]]
      [:div {:class "span-20 last"}
        (disqus-thread vrn sname "")]]))
      ;(disqus-body-end sname)]))
+
 
 (defn personal-template [request]
   "Information for a logged in users personal page."

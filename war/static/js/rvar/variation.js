@@ -2,6 +2,7 @@
  */
 
 $(document).ready(function() {
+  $("#vrn-accordion").accordion();
   //console.info($("#vrn-links").find("li"));
   // External links from the variation
   //$("#vrn-links").find("li").button();
