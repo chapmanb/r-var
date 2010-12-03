@@ -2,7 +2,7 @@
   Create CSV files for SNP data mapping to genes and modifications.
 
   Usage:
-      lein run scripts/ensembl_transcripts.clj <phenotype CSV> <data directory>
+      lein run scripts/ensembl_transcripts.clj <data directory>
 
   The variation file is a CSV file with a header where the first item is a SNP
   style variation name that will be looked up in Ensembl.
@@ -81,19 +81,20 @@
     (for [line (rest (line-seq (reader p-file)))]
       (line-info line))))
 
-(defn transcript-csv [in-file out-dir]
-  (doseq [[phenotype _] (file-phenotypes in-file)]
-    (let [phen-dir (str2/join "/" [out-dir (str2/replace phenotype " " "_")])
-          gene-file (str2/join "/" [phen-dir "genes.csv"])
-          v-tx-file (str2/join "/" [phen-dir "tx-variation.csv"])
-          var-base (str2/join "/" [phen-dir "variation-"])]
-      (io/with-out-writer v-tx-file
-        (println (str2/join "," (header tx-items)))
-        (let [genes (gene-map var-base)]
-          (io/with-out-writer gene-file
-            (println (str2/join "," (header gene-items)))
-            (doseq [gene (vals genes)]
-              (println (str2/join "," (line-items gene gene-items))))))))))
+(defn transcript-csv [data-dir]
+  (let [in-file (file data-dir "phenotypes.csv")]
+    (doseq [[phenotype _] (file-phenotypes in-file)]
+      (let [phen-dir (file data-dir (str2/replace phenotype #"[' ]" "_"))
+            gene-file (file phen-dir "genes.csv")
+            v-tx-file (file phen-dir "tx-variation.csv")
+            var-base (file phen-dir "variation-")]
+        (io/with-out-writer v-tx-file
+          (println (str2/join "," (header tx-items)))
+          (let [genes (gene-map var-base)]
+            (io/with-out-writer gene-file
+              (println (str2/join "," (header gene-items)))
+              (doseq [gene (vals genes)]
+                (println (str2/join "," (line-items gene gene-items)))))))))))
 
 (when *command-line-args*
   (apply transcript-csv *command-line-args*))

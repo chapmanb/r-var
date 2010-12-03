@@ -1,13 +1,12 @@
 (comment "
   Create a CSV file of phenotype data from ensembl, ready for GAE upload.
 
-
   1. ~/install/gae/google_appengine/appcfg.py create_bulkloader_config 
      --filename=bulkloader.yaml --url=http://localhost:8080/remote_api --application=our-var
 
   2. Edit the bulkloader.yaml to match our output files.
 
-  3. lein run scripts/ensembl_phenotypes.clj phenotypes.csv script
+  3. lein run scripts/ensembl_phenotypes.clj <data directory>
 
   4. ~/install/gae/google_appengine/appcfg.py upload_data --config_file=bulkloader.yaml --filename=data/variation-phenotypes.csv --url=http://localhost:8080/remote_api --application=our-var --kind VariationPhenotype
      ~/install/gae/google_appengine/appcfg.py upload_data --config_file=bulkloader.yaml --filename=data/phenotypes.csv --url=http://localhost:8080/remote_api --application=our-var --kind Phenotype
@@ -47,16 +46,17 @@
     (for [line (rest (line-seq (reader p-file)))]
       (line-info line))))
 
-(defn phenotypes-to-csv [in-file out-dir]
+(defn phenotypes-to-csv [out-dir]
   "Write out our defined phenotypes of interest to CSV for uploading."
-  (doseq [[phenotype ensembl] (file-phenotypes in-file)]
-    (let [p-file (str2/join "/" [out-dir (str2/replace phenotype " " "_")
-                                 "variation-ensembl.csv"])]
-      (make-parents p-file)
-      (with-out-writer p-file
-        (println (str2/join "," (phenotype-header)))
-        (doseq [var (apply phenotype-variations (cons phenotype ensembl))]
-          (println (str2/join "," (phenotype-out var))))))))
+  (let [in-file (file out-dir "phenotypes.csv")]
+    (doseq [[phenotype ensembl] (file-phenotypes in-file)]
+      (let [p-file (file out-dir (str2/replace phenotype #"[' ]" "_")
+                         "variation-ensembl.csv")]
+        (make-parents p-file)
+        (with-out-writer p-file
+          (println (str2/join "," (phenotype-header)))
+          (doseq [var (apply phenotype-variations (cons phenotype ensembl))]
+            (println (str2/join "," (phenotype-out var)))))))))
 
 (when *command-line-args*
   (apply phenotypes-to-csv *command-line-args*))

@@ -5,7 +5,7 @@ Attempt to provide an at-a-glance view of what the literature record says about
 a SNP, emphasizing relationships to phenotypes of interest.
 
 Usage:
-    publication_summary.py <variation phenotype file>
+    publication_summary.py <data directory>
 """
 import sys
 import os
@@ -19,10 +19,11 @@ import collections
 from Bio import Entrez
 Entrez.email = "nospam@50mail.com"
 
-def main(vrn_file, start_info=None):
+def main(data_dir, start_info=None):
     if start_info:
         start_info = tuple(start_info.split(","))
-    out_file = os.path.join(os.path.dirname(vrn_file), "lit-kwds.csv")
+    vrn_file = os.path.join(data_dir, "variation-phenotypes.csv")
+    out_file = os.path.join(data_dir, "lit-kwds.csv")
     with open(out_file, "w" if not start_info else "a") as out_handle:
         writer = csv.writer(out_handle)
         seen_pubmedids = set()

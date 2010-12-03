@@ -5,7 +5,7 @@
   (:use [clojure.contrib.sql])
   (:require [clojure.contrib.str-utils2 :as str]))
 
-(def ensembl-version "59_37d")
+(def ensembl-version "60_37e")
 
 (defn- ensembl-db [db-name]
   "Connection to Ensembl database with the given name."

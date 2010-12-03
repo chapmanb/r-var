@@ -197,9 +197,11 @@ def _snp_details(snps, phenotype, snp_start=None):
                 yield details, desc_return
             time.sleep(1)
 
-def main(disease_file, out_dir, snp_start=None):
+def main(out_dir, snp_start=None):
+    disease_file = os.path.join(out_dir, "phenotypes.csv")
     for phenotype, snps in snps_from_disease_file(disease_file):
-        out_p = os.path.join(out_dir, phenotype.replace(" ", "_"),
+        out_p = os.path.join(out_dir,
+                phenotype.replace(" ", "_").replace("'", "_"),
                 "variation-snpedia.csv")
         with open(out_p, "w") as p_handle:
             p_writer = csv.writer(p_handle)
