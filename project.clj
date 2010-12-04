@@ -20,5 +20,6 @@
                      [clojure-csv/clojure-csv "1.2.0"]
                      [ring/ring-core "0.2.5"]]
   :repositories [["maven-gae-plugin" "http://maven-gae-plugin.googlecode.com/svn/repository"]]
+  :jvm-opts ["-Xmx1512M"]
   :compile-path "war/WEB-INF/classes"
   :library-path "war/WEB-INF/lib")

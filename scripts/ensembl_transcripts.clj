@@ -45,11 +45,11 @@
 
 (defn- genes-and-print-variations [vrns]
   "Return associated genes, printing variation information as a side effect."
-  (lazy-seq
-    (when-let [cur-vrn (first vrns)]
-      (let [gene-txs (variation-genes cur-vrn)]
+  (for [cur-vrn vrns]
+    (let [gene-txs (variation-genes cur-vrn)]
+      (do
         (print-variations gene-txs)
-        (flatten (cons (keys gene-txs) (genes-and-print-variations (rest vrns))))))))
+        (keys gene-txs)))))
 
 (defn- file-variations [var-base]
   "Lazy sequence of unique variations in a CSV variation files."
@@ -66,8 +66,9 @@
 
 (defn- gene-map [var-base]
   "Retrieve map of unique genes in the listed variations."
-  (reduce (fn [genes gene]
-            (assoc genes (:gene_stable_id gene) gene))
+  (reduce (fn [all-genes genes]
+            (into all-genes (for [g genes] 
+                              [(:gene_stable_id g) g])))
     {} (genes-and-print-variations (file-variations var-base))))
 
 (defn- file-phenotypes [p-file]
