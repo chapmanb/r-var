@@ -14,17 +14,6 @@
             [clojure.contrib.str-utils2 :as str2]
             [gaka [core :as gaka]]))
 
-(defn user-info [request]
-  (let [ui (users/user-info)]
-  [:div {:class "span-24 last"}
-    (if-let [user (:user ui)]
-      [:div {:id "user-manage"}
-       (link-to (.createLogoutURL (:user-service ui) "/") (.getEmail user))]
-      [:div {:id "user-manage"}
-       (link-to (.createLoginURL (:user-service ui) "/") "Login")]
-      )
-   ]))
-
 (defn side-bar [request]
   "Common navigation and user management side bar."
   (let [ui (users/user-info)]
@@ -49,14 +38,8 @@
               :src "/static/js/jquery-ui-1.8.4.custom.min.js"}]
     [:script {:type "text/javascript" 
               :src "/static/js/jquery.cookie.js"}]
-    ;[:script {:type "text/javascript" 
-    ;          :src "/static/js/grid.locale-en.js"}]
-    ;[:script {:type "text/javascript" 
-    ;          :src "/static/js/jquery.jqGrid.min.js"}]
     [:link {:type "text/css" :rel "stylesheet" :media "screen" 
             :href "/static/css/Aristo/jquery-ui-1.8.5.custom.css"}]
-    ;[:link {:type "text/css" :rel "stylesheet" :media "screen" 
-    ;        :href "/static/css/ui.jqgrid.css"}]
     [:link {:type "text/css" :rel "stylesheet" :media "screen" 
             :href "/static/css/blueprint/screen.css"}]
     [:link {:type "text/css" :rel "stylesheet" :media "print" 
@@ -232,16 +215,6 @@
                    $('.dsq-autheneticate-copy').html('Login');
                    $('#dsq-form-area').hide();"]
      (disqus-thread "personal" sname custom-js)))
-  ;(let [ui (users/user-info)]
-  ;  (if (:user ui)
-  ;    [:html
-  ;      [:script {:type "text/javascript"
-  ;                :src "/static/js/rvar/variation.js"}]
-  ;      [:table {:id "var-grid"}]
-  ;      (upload-genome)]
-  ;    [:html "Please "
-  ;     (link-to (.createLoginURL (:user-service ui) "/") "login")
-  ;     " to add your personal genome information."])))
 
 (defn landing-template [request]
   [:div {:id "overview" :class "container span-23 last"}
@@ -274,7 +247,6 @@
             (.button ($ "#user-manage a")))))]]
      [:body 
       [:div {:class "container"}
-       ;(user-info request)
        [:div {:id "header" :class "span-24 last"}
         [:div {:id "header-logo"}
           [:img {:src "/static/images/aardvark.jpg" :width "120" :height "60"}]]
