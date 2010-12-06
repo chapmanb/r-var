@@ -77,6 +77,20 @@ transformers:
     - property: rank
       external_name: rank
       import_transform: 'lambda x: float(x)'
+- kind: VariationGroup
+  connector: csv
+  property_map:
+    - property: phenotype
+      external_name: phenotype
+    - property: group
+      external_name: group
+      import_transform: 'lambda x: x.split(";")'
+    - property: score
+      external_name: score
+      import_transform: 'lambda x: float(x)'
+    - property: variations
+      external_name: variations
+      import_transform: 'lambda x: x.split(";")'
 - kind: VariationProviders
   connector: csv
   property_map:
