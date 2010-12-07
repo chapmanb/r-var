@@ -23,7 +23,10 @@ var display_trait_vars = function(term, start, limit) {
     {phenotype: term, start: start, limit: limit},
     function(data) {
       $.each(data.variations, function(index, value) {
-        $("<li class='ui-widget-content'>" + value + "</li>")
+        console.info(value);
+        var vrn_info = "<div class='group_vrns'>" + value.variations.join(",")
+                       + "</div>";
+        $("<li class='ui-widget-content'>" + vrn_info + "</li>")
         .appendTo(vrn_ol);
       });
       $(vrn_ol).children().hover(function() {
@@ -35,7 +38,7 @@ var display_trait_vars = function(term, start, limit) {
       });
       // On click, load variation info in the appropriate tab
       $(vrn_ol).children().click(function() {
-        $("#nav-tabs").tabs('url', 2, '/varview?vrn=' + $(this).html());
+        $("#nav-tabs").tabs('url', 2, '/varview?vrn=' + $(this).find(".group_vrns").html());
         $("#nav-tabs").tabs('select', 2);
       });
       $("#vrn-more-button").button("option", "disabled", !data.hasmore);

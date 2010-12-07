@@ -1,5 +1,13 @@
 (comment "
-  Smartly group together variants based on affected genes.
+  Group together variants based on affected genes.
+
+  Approach:
+    - Sort variants into gene based groups based on locations in or close to
+      affected genes.
+    - Group together related genes sharing a large percentage of variants.
+    - Associate one group with each variation.
+    - Combine scores of all variations in a gene for a group score.
+    - Output CSV of groups, scores and associated variations for each phenotype.
 
   Usage:
     lein run scripts/group_variations.clj <data directory>

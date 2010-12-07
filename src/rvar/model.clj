@@ -5,37 +5,6 @@
   (:use [appengine.datastore])
   (:require [clojure.contrib.json :as json]))
 
-(defn get-user [email]
-  "Get or create a database user with the given email address."
-  (let [user-query (select "user" where (= :email email))]
-    (if (empty? user-query)
-      (create-entity {:kind "user" :email email})
-      (first user-query))))
-
-(defn load-var-group [user fname]
-  (with-commit-transaction
-    (create-entity {:kind "vargroup" :parent (:key user) :filename fname})))
-
-(defn get-user-variations [email]
-  "Retrieve a lazy list of variation objects for the given user."
-  (let [user (get-user email)]
-    (flatten
-      (for [var-group (select "vargroup" where (= :parent (:key user)))]
-        (for [cur-var (select "variation" where (= :parent (:key var-group)))]
-          cur-var)))))
-
-(defn load-variances [user fname variances]
-  "Load a lazy stream of variance information into the datastore."
-  (let [group (load-var-group user fname)]
-    (with-commit-transaction
-      (doseq [cur-var (take 1 variances)]
-        (create-entity {:kind "variation" :parent (:key group)
-                        :start (:start cur-var) :end (:end cur-var)
-                        :chrom (:chr cur-var) :genotype (:genotype cur-var)
-                        :id (:id cur-var)
-                        })))
-    group))
-
 (defn get-phenotypes []
   "Retrieve top level phenotypes from the datastore."
   (sort
@@ -48,10 +17,16 @@
                         order-by (:rank :desc))]
       phn-var))
 
+(defn get-phenotype-vrn-groups [phn]
+  "Retrieve variation groups associated with a phenotype."
+  (for [phn-grp (select "VariationGroup" where (= :phenotype phn)
+                        order-by (:score :desc))]
+    phn-grp))
+
 (defn get-vrn-phenotypes [vrn]
   "Retrieve phenotypes associated with a variation."
   (distinct
-    (for [var-phn (select "VariationPhenotype" where (= :variation vrn))]
+    (for [var-phn (select "VariationScore" where (= :variation vrn))]
       (:phenotype var-phn))))
 
 (defn get-vrn-transcripts [vrn]
@@ -82,35 +57,35 @@
   (let [db-item (first (select "VariationLit" where (= :variation vrn)))]
     (json/read-json (.getValue (:keywords db-item)))))
 
-;(defentity User ()
-;  ((email)
-;   (name)))
+; Support for uploaded variations for a user. Needs to be reworked.
 ;
-;(defentity Vargroup (User)
-;  ((name)
-;   (reference)
-;   (filename)))
+;(defn get-user [email]
+;  "Get or create a database user with the given email address."
+;  (let [user-query (select "user" where (= :email email))]
+;    (if (empty? user-query)
+;      (create-entity {:kind "user" :email email})
+;      (first user-query))))
 ;
-;(defentity Variation (Vargroup)
-;  ((id)
-;   (chrom)
-;   (start)
-;   (end)
-;   (genotype)))
+;(defn load-var-group [user fname]
+;  (with-commit-transaction
+;    (create-entity {:kind "vargroup" :parent (:key user) :filename fname})))
 ;
-;(defentity Comment (Variation)
-;  ((note)))
+;(defn get-user-variations [email]
+;  "Retrieve a lazy list of variation objects for the given user."
+;  (let [user (get-user email)]
+;    (flatten
+;      (for [var-group (select "vargroup" where (= :parent (:key user)))]
+;        (for [cur-var (select "variation" where (= :parent (:key var-group)))]
+;          cur-var)))))
 ;
-;(defentity VariationPhenotype
-; ((variation)
-;  (phenotype)
-;  (study)
-;  (study_type)
-;  (associated_gene)
-;  (associated_variant_risk_allele)
-;  (risk_allele_freq_in_controls)
-;  (p_value)))
-;
-;(defentitry Phenotype
-; ((name)
-;  (phenotypes)))
+;(defn load-variances [user fname variances]
+;  "Load a lazy stream of variance information into the datastore."
+;  (let [group (load-var-group user fname)]
+;    (with-commit-transaction
+;      (doseq [cur-var (take 1 variances)]
+;        (create-entity {:kind "variation" :parent (:key group)
+;                        :start (:start cur-var) :end (:end cur-var)
+;                        :chrom (:chr cur-var) :genotype (:genotype cur-var)
+;                        :id (:id cur-var)
+;                        })))
+;    group))

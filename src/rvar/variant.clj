@@ -14,28 +14,31 @@
       (dissoc :key)
       (dissoc :parent))))
 
-(defn vrn-list [request]
-  "A JSON list of variations for the current user."
-  (let [user (.getEmail ((request :appengine/user-info) :user))
-        params (:params request)
-        rows (Integer/parseInt (get params "rows"))
-        start (* rows (- 1 (Integer/parseInt (get params "page"))))
-        vars (clean-db-items (get-user-variations user))
-        cur-vars (take rows (drop start vars))]
-    (println cur-vars)
-    (json/json-str {:total (count cur-vars) :page (get params "page")
-                    :records (count cur-vars)
-                    :rows cur-vars})))
+;(defn vrn-list [request]
+;  "A JSON list of variations for the current user."
+;  (let [user (.getEmail ((request :appengine/user-info) :user))
+;        params (:params request)
+;        rows (Integer/parseInt (get params "rows"))
+;        start (* rows (- 1 (Integer/parseInt (get params "page"))))
+;        vars (clean-db-items (get-user-variations user))
+;        cur-vars (take rows (drop start vars))]
+;    (println cur-vars)
+;    (json/json-str {:total (count cur-vars) :page (get params "page")
+;                    :records (count cur-vars)
+;                    :rows cur-vars})))
 
 (defn trait-vrn-list [request]
-  "A list of variants associated with a phenotypic trait."
+  "A list of variant groups associated with a phenotypic trait."
   (let [params (:query-params request)
         extra-check 1
         phenotype (-> params (get "phenotype"))
         limit (-> params (get "limit" "10") (Integer/parseInt))
         start (-> params (get "start" "0") (Integer/parseInt))]
-    (->> (take (+ limit extra-check) (drop start (get-phenotype-vrns phenotype)))
-      (map #(:variation %))
+    (->> (take (+ limit extra-check) (drop start (get-phenotype-vrn-groups phenotype)))
+      (map #(dissoc % :key))
+      (map #(dissoc % :kind))
+      (map #(dissoc % :phenotype))
+      (map #(dissoc % :score))
       (remove nil?)
       (distinct)
       (#(json/json-str {:variations (take limit %)

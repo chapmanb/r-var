@@ -33,6 +33,8 @@
     (url-encode)
     (#(ext-link (str "http://en.wikipedia.org/wiki/" %) term))))
 
-(defn ensembl-gene-link [eid text]
-  "Link to ensembl gene information."
-  (ext-link (str "http://www.ensembl.org/Homo_sapiens/Gene/Summary?g=" eid) text))
+(defn biogps-link [eid text]
+  "Link to gene portal at BioGPS."
+  (let [url "http://biogps.gnf.org/?query="
+        link-text (if (= text " ") eid text)]
+    (ext-link (str url eid) link-text)))

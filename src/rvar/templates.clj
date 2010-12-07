@@ -76,7 +76,7 @@
   "Provide entry points for exploring SNPs related to phenotypes."
   (let [params (:query-params request)
         std-ol (list :list-style-type "none" :margin 0 :padding 0)
-        std-li (list :margin "1px" :padding "0.4em" :font-size "1.4em" :height "18px")]
+        std-li (list :margin "1px" :padding "0.4em" :font-size "1.3em" :height "16px")]
     [:div {:class "container"}
      [:style {:type "text/css"}
       (gaka/css [:#health-select std-ol :width "100%" 
@@ -86,14 +86,15 @@
                 [:#vrn-header :float "left" :margin-right "10px"]
                 [:#vrn-header-page :float "left"]
                 [:#vrn-less-button :float "left" :margin-right "20px"]
-                [:#vrn-more-button :float "right"])]
+                [:#vrn-more-button :float "right"]
+                [:.group_vrns :font-size ".8em"])]
      [:script {:type "text/javascript" :src "/static/js/rvar/health.js"}]
-     [:div {:class "span-8"}
+     [:div {:class "span-6"}
        [:h4 "&nbsp;"]
        [:ol {:id "health-select"}
         (for [p (get-phenotypes)]
           [:li {:class "ui-widget-content"} p])]]
-     [:div {:class "span-12 last"}
+     [:div {:class "span-14 last"}
       [:button {:id "vrn-less-button"}]
       [:h3 {:id "vrn-header"} "Select a health topic to explore"]
       [:div {:id "vrn-header-page"}]
@@ -143,7 +144,7 @@
     [:li allele
     [:ul {:id "gene-name"}
      (for [[_ eid gname gdesc mod-details] gene-info]
-       [:li (ensembl-gene-link eid (str2/join " " [gname gdesc]))
+       [:li (biogps-link eid (str2/join " " [gname gdesc]))
        [:ul {:id "gene-mods"}
         (for [[cmod cmod-details] mod-details]
           [:li (str2/join " " [cmod cmod-details])])]])]])])
