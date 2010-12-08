@@ -76,7 +76,7 @@
   "Provide entry points for exploring SNPs related to phenotypes."
   (let [params (:query-params request)
         std-ol (list :list-style-type "none" :margin 0 :padding 0)
-        std-li (list :margin "1px" :padding "0.4em" :font-size "1.3em" :height "16px")]
+        std-li (list :margin "1px" :padding "0.4em" :font-size "1.3em")]
     [:div {:class "container"}
      [:style {:type "text/css"}
       (gaka/css [:#health-select std-ol :width "100%" 
@@ -149,14 +149,37 @@
         (for [[cmod cmod-details] mod-details]
           [:li (str2/join " " [cmod cmod-details])])]])]])])
 
+(defn- vrn-details-template [vrn]
+  "Organize variation details for an accordion style view."
+  (html
+    [:h3 [:a {:href "#"} vrn]]
+    [:div 
+     [:div {:class "span-9 ui-widget ui-widget-content" :id "genome"}
+      [:h4 {:class "ui-helper-reset ui-widget-header"} "Genome"]
+      (gene-changes-template vrn)]
+     [:div {:class "span-4 last" :id "vrn-links"}
+      [:div {:class "ui-widget ui-widget-content" :id "vrn-links-info"}
+       [:h4 {:class "ui-helper-reset ui-widget-header"} "More information"]
+       [:ul
+        (for [link (vrn-links vrn)]
+          [:li link])]]
+       (let [pro-links (vrn-providers vrn)]
+        (if (> (count pro-links) 0)
+          [:div {:class "ui-helper-reset ui-widget ui-widget-content"}
+            [:h4 {:class "ui-helper-reset ui-widget-header"} "Testing providers"]
+            [:ul
+             (for [pro-link pro-links]
+               [:li pro-link])]]))]]))
+
 (defn variation-template [request]
   "Show details and discussion for a specific variation."
   (let [sname "r-var"
-        vrn (-> request (:query-params) (get "vrn" "rs6604026"))
+        vrn-str (-> request (:query-params) (get "vrns" "rs6604026"))
+        vrns (sort-by get-variant-rank > (str2/split vrn-str #", "))
         link-style (list [:a :text-decoration "none"] [:a:hover :color "#5f83b9"])
         link-portal-css (list 
                           [:ul :list-style-type "none" :margin 0 :padding 0]
-                          [:li :margin "2px" :padding "0.4em" :font-size "1.2em" :height "15px"
+                          [:li :margin "2px" :padding "0.4em" :font-size "1.2em" 
                            link-style]
                           [:h4 :text-align "center"])]
     [:div {:class "container"}
@@ -176,33 +199,18 @@
      [:script {:type "text/javascript"
                :src "/static/js/rvar/variation.js"}]
      [:div {:class "span-6 ui-widget ui-widget-content" :id "vrn-pubs"}
-      [:h4 {:class "ui-helper-reset ui-widget-header"} "Publication keywords"]
-      [:ul
-       (for [[kwd _] (take 10 (reverse (sort-by second (get-variant-keywords vrn))))]
-         [:li (wikipedia-link (name kwd))])]]
+      (let [kwd-scores (combine-variant-keywords vrns)]
+        (if (> (count kwd-scores) 0)
+          [:h4 {:class "ui-helper-reset ui-widget-header"} "Publication keywords"])
+        [:ul
+         (for [[kwd _] (take 10 kwd-scores)]
+           [:li (wikipedia-link (name kwd))])])]
      [:div {:id "vrn-accordion" :class "span-14 last"}
-      [:h3 [:a {:href "#"} vrn]]
-      [:div 
-       [:div {:class "span-9 ui-widget ui-widget-content" :id "genome"}
-        [:h4 {:class "ui-helper-reset ui-widget-header"} "Genome"]
-        (gene-changes-template vrn)]
-       [:div {:class "span-4 last" :id "vrn-links"}
-        [:div {:class "ui-widget ui-widget-content" :id "vrn-links-info"}
-         [:h4 {:class "ui-helper-reset ui-widget-header"} "More information"]
-         [:ul
-          (for [link (vrn-links vrn)]
-            [:li link])]]
-         (let [pro-links (vrn-providers vrn)]
-          (if (> (count pro-links) 0)
-            [:div {:class "ui-helper-reset ui-widget ui-widget-content"}
-              [:h4 {:class "ui-helper-reset ui-widget-header"} "Testing providers"]
-              [:ul
-               (for [pro-link pro-links]
-                 [:li pro-link])]]))]]]
+      (for [vrn vrns]
+        (vrn-details-template vrn))]
      [:div {:class "span-20 last"}
-       (disqus-thread vrn sname "")]]))
+       (disqus-thread vrn-str sname "")]]))
      ;(disqus-body-end sname)]))
-
 
 (defn personal-template [request]
   "Information for a logged in users personal page."

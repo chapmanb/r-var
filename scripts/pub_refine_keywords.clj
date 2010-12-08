@@ -58,6 +58,7 @@
         kwds-rm (set (keys (filter 
                         (fn [[k v]] (> v (* (count kwds-by-phn) filter-pct))) 
                         kwds)))]
+    (println kwds-rm)
     (fn [to-filter]
       (reduce (fn [final [k v]] (if-not (contains? kwds-rm k) 
                                   (assoc final k v)

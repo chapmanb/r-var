@@ -37,8 +37,8 @@ def _phenotype_unique(parts):
 # -- ability to merge together data with shared keys and overlapping info
 
 def _phenotype_merge(orig_parts, new_parts):
-    print orig_parts, new_parts
-    raise NotImplementedError
+    assert orig_parts == new_parts, (orig_parts, new_parts)
+    return orig_parts
 
 def combine_files(out_file, phenotypes, data_dir, unique_fn, merge_fn=None,
         in_file_glob=None):

@@ -78,9 +78,15 @@ class KeywordRetriever:
             except urllib2.URLError:
                 print "Retrying url retrieval"
                 time.sleep(5)
-        article = recs[0]["MedlineCitation"]["Article"]
-        text = " ".join([article["ArticleTitle"],
-                         article["Abstract"]["AbstractText"]])
+        if len(recs) > 0:
+            article = recs[0]["MedlineCitation"]["Article"]
+            try:
+                abstract = article["Abstract"]["AbstractText"]
+            except KeyError:
+                abstract = ""
+            text = " ".join([article["ArticleTitle"], abstract])
+        else:
+            text = ""
         return self._zemanta_keywords(text)
 
     def _zemanta_keywords(self, text):

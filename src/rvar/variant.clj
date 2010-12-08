@@ -27,6 +27,11 @@
 ;                    :records (count cur-vars)
 ;                    :rows cur-vars})))
 
+(defn combine-variant-keywords [vrns]
+  "Retrieve ordered keywords for a set of variants; most unique first."
+  (sort-by second >
+           (first (merge-with + (for [v vrns] (get-variant-keywords v))))))
+
 (defn trait-vrn-list [request]
   "A list of variant groups associated with a phenotypic trait."
   (let [params (:query-params request)

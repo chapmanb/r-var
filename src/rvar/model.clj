@@ -50,8 +50,8 @@
   "Retrieve the rank score for a variant"
   (let [db-item (first (select "VariationScore" where (= :variation vrn)))]
     (if-not (nil? db-item)
-      (Integer/parseInt (:rank db-item))
-      0)))
+      (:rank db-item)
+      0.0)))
 
 (defn get-variant-keywords [vrn]
   (let [db-item (first (select "VariationLit" where (= :variation vrn)))]
