@@ -5,7 +5,6 @@
 (ns rvar.templates
   (:use [hiccup.core]
         [hiccup.form-helpers :only [form-to file-upload]]
-        [com.reasonr.scriptjure :as scriptjure]
         [rvar.variant]
         [rvar.model]
         [rvar.external])
@@ -234,10 +233,7 @@
   (let [title "Ourvar: exploring our genomic variability"]
     [:html
      [:head (std-header title)
-      [:script {:type "text/javascript"}
-       (scriptjure/js (.ready ($ document)
-          (fn [] (.tabs ($ "#nav-tabs") {:cookie {:expires 1}})
-            (.button ($ "#user-manage a")))))]]
+      [:script {:type "text/javascript" :src "/static/js/rvar/index.js"}]]
      [:body 
       [:div {:class "container"}
        [:div {:id "header" :class "span-24 last"}
