@@ -5,8 +5,7 @@ Uploading, process and store details on genomic variance.
 (ns rvar.upload
   (:use [clojure.java.io]
         [clojure.contrib.str-utils])
-  (:require [rvar.model :as model]
-            [appengine.datastore :as ds])
+  (:require [rvar.model :as model])
   (:import (java.io InputStreamReader
       ByteArrayOutputStream ByteArrayInputStream ObjectInputStream)))
 
@@ -23,10 +22,11 @@ Uploading, process and store details on genomic variance.
       {:id (:rsid raw) :chr (:chr raw) :start start
        :end (+ 1 start) :genotype (:genotype raw)})))
 
-(defn upload-23andme [request]
-  "Upload a file of 23 and me SNPs."
-  (let [file-upload (get (request :multipart-params) "ufile")
-        user (model/get-user (.getEmail ((request :appengine/user-info) :user)))
-        fname (file-upload :filename)
-        variances (variances-23andme (file-upload :data))]
-    (str (model/load-variances user fname variances))))
+; Needs to be reworked with new user model
+;(defn upload-23andme [request]
+;  "Upload a file of 23 and me SNPs."
+;  (let [file-upload (get (request :multipart-params) "ufile")
+;        user (model/get-user (.getEmail ((request :appengine/user-info) :user)))
+;        fname (file-upload :filename)
+;        variances (variances-23andme (file-upload :data))]
+;    (str (model/load-variances user fname variances))))

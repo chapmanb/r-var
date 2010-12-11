@@ -2,59 +2,70 @@
  Data store models representing objects of interest with key/val pairs.
 ")
 (ns rvar.model
-  (:use [appengine.datastore])
-  (:require [clojure.contrib.json :as json]))
+  (:require [clojure.contrib.json :as json]
+            [appengine-magic.services.datastore :as ds]))
+
+; Entity definitions for all of the items stored in the appengine datastore
+
+(ds/defentity Phenotype [name ensembl snpedia])
+(ds/defentity VariationScore [variation phenotype genescore refscore rank])
+(ds/defentity VariationGroup [phenotype group score variations])
+(ds/defentity VariationTranscript [transcript_stable_id gene_stable_id
+                                   variation allele peptide_allele_string
+                                   consequence_type])
+(ds/defentity VariationProviders [variation providers])
+(ds/defentity VariationLit [variation phenotype numrefs keywords])
+(ds/defentity Gene [gene_stable_id name description])
+
+; High level access functions instead of direct datastore access
 
 (defn get-phenotypes []
   "Retrieve top level phenotypes from the datastore."
   (sort
-    (for [p-data (select "Phenotype")]
+    (for [p-data (ds/query :kind Phenotype)]
       (:name p-data))))
 
 (defn get-phenotype-vrns [phn]
   "Retrieve variation data associated with the phenotype."
-  (for [phn-var (select "VariationScore" where (= :phenotype phn)
-                        order-by (:rank :desc))]
+  (for [phn-var (ds/query :kind VariationScore :filter (= :phenotype phn)
+                          :sort [[:rank :desc]])]
       phn-var))
 
 (defn get-phenotype-vrn-groups [phn]
   "Retrieve variation groups associated with a phenotype."
-  (for [phn-grp (select "VariationGroup" where (= :phenotype phn)
-                        order-by (:score :desc))]
+  (for [phn-grp (ds/query :kind VariationGroup :filter (= :phenotype phn)
+                          :sort [[:score :desc]])]
     phn-grp))
-
-(defn get-vrn-phenotypes [vrn]
-  "Retrieve phenotypes associated with a variation."
-  (distinct
-    (for [var-phn (select "VariationScore" where (= :variation vrn))]
-      (:phenotype var-phn))))
 
 (defn get-vrn-transcripts [vrn]
   "Retrieve transcripts associated with a variation."
-  (for [vrn-tx (select "VariationTranscript" where (= :variation vrn))]
+  (for [vrn-tx (ds/query :kind VariationTranscript :filter (= :variation vrn))]
     vrn-tx))
 
 (defn get-vrn-providers [vrn]
   "Companies that provide genotyping of a variation."
-  (let [vrn-pro (first (select "VariationProviders" where (= :variation vrn)))]
+  (let [vrn-pro (first (ds/query :kind VariationProviders 
+                                 :filter (= :variation vrn)))]
     (if-not (nil? vrn-pro)
       (:providers vrn-pro))))
 
 (defn get-gene [gene-id]
   "Gene name and description via the ensembl stable gene id."
   (first
-    (for [gene (select "Gene" where (= :gene_stable_id gene-id))]
-      [(:name gene) (:description gene)])))
+    (for [gene (ds/query :kind Gene :filter (= :gene_stable_id gene-id))]
+      (select-keys gene [:name :description]))))
 
 (defn get-variant-rank [vrn]
   "Retrieve the rank score for a variant"
-  (let [db-item (first (select "VariationScore" where (= :variation vrn)))]
+  (let [db-item (first (ds/query :kind VariationScore 
+                                 :filter (= :variation vrn)))]
     (if-not (nil? db-item)
       (:rank db-item)
       0.0)))
 
 (defn get-variant-keywords [vrn]
-  (let [db-item (first (select "VariationLit" where (= :variation vrn)))]
+  (let [db-item (first (ds/query :kind VariationLit
+                                 :filter (= :variation vrn)))]
     (json/read-json (.getValue (:keywords db-item)))))
 
 ; Support for uploaded variations for a user. Needs to be reworked.

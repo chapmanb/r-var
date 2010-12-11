@@ -1,6 +1,7 @@
+classes
 lib
-war/WEB-INF/appengine-generated
-war/WEB-INF/classes
-war/WEB-INF/lib
+resources/WEB-INF/appengine-generated
+resources/WEB-INF/classes
+resources/WEB-INF/lib
 scripts/bulkloader*
 scripts/*.csv*

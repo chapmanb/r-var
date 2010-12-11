@@ -1,11 +1,15 @@
 (comment "
   Rank full list of keywords for each variation to emphasize literature details.
 
+  The building blocks:
+    - Keyword counts for each article.
+    - Summarized keywords for individual phenotypes.
+    - Keywords which are present across all phenotypes and less useful.
+
+  Score calculation:
+
   Usage:
     lein run scripts/pub_refine_keywords.clj <data directory>
-  
-  Upload:
-    ~/install/gae/google_appengine/appcfg.py upload_data --config_file=bulkloader.yaml --url=http://localhost:8080/remote_api --application=our-var --filename=data/variation-lit.csv --kind VariationLit
 ")
 
 (ns rvar.scripts.pub-refine-keywords
@@ -58,7 +62,7 @@
         kwds-rm (set (keys (filter 
                         (fn [[k v]] (> v (* (count kwds-by-phn) filter-pct))) 
                         kwds)))]
-    (println kwds-rm)
+    (println "Removed keywords" kwds-rm)
     (fn [to-filter]
       (reduce (fn [final [k v]] (if-not (contains? kwds-rm k) 
                                   (assoc final k v)

@@ -3,9 +3,9 @@
 ")
 
 (ns rvar.variant
-  (:use [clojure.contrib.json :as json]
-        [rvar.model])
-  (:require [clojure.contrib.str-utils2 :as str2]))
+  (:use [rvar.model])
+  (:require [clojure.contrib.str-utils2 :as str2]
+            [clojure.contrib.json :as json]))
 
 (defn- clean-db-items [maps]
   "Remove db-specific keys and parents from a map."
@@ -44,6 +44,7 @@
       (map #(dissoc % :kind))
       (map #(dissoc % :phenotype))
       (map #(dissoc % :score))
+      (map #(assoc % :gene_name (-> % :group first get-gene :name)))
       (remove nil?)
       (distinct)
       (#(json/json-str {:variations (take limit %)
@@ -78,9 +79,9 @@
         split-change #(str2/split % #"/")]
     (group-by first
       (for [gene (keys mods-by-gene)]
-        (let [[gname gdesc] (get-gene gene)
+        (let [ginfo (get-gene gene)
               txs (get mods-by-gene gene)
               allele (:allele (first txs))
               mods-by-type (group-by #(:consequence_type %) txs)
               mod-details (distinct (map #(apply mod-view %) mods-by-type))]
-          [allele gene gname gdesc mod-details])))))
+          [allele gene (:name ginfo) (:description ginfo) mod-details])))))

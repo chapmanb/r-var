@@ -4,29 +4,13 @@
 
 (ns rvar.templates
   (:use [hiccup.core]
-        [hiccup.page-helpers :only [link-to]]
         [hiccup.form-helpers :only [form-to file-upload]]
         [com.reasonr.scriptjure :as scriptjure]
         [rvar.variant]
         [rvar.model]
         [rvar.external])
-  (:require [appengine.users :as users]
-            [clojure.contrib.str-utils2 :as str2]
+  (:require [clojure.contrib.str-utils2 :as str2]
             [gaka [core :as gaka]]))
-
-(defn side-bar [request]
-  "Common navigation and user management side bar."
-  (let [ui (users/user-info)]
-  [:div {:class "span-6 last" :id "sidebar"}
-   [:h3 {:class "caps"} "User"]
-   [:div {:class "box"}
-    (if-let [user (:user ui)]
-      [:div {:class "quiet"}
-       (.getEmail user) "<br/>" (link-to (.createLogoutURL (:user-service ui) "/") "Logout")]
-      [:div {:class "quiet"}
-       (link-to (.createLoginURL (:user-service ui) "/") "Login")]
-      )]
-   ]))
 
 (defn std-header [title]
   "Shared header elements between pages."
@@ -265,9 +249,9 @@
        [:div {:class "span-24 last" :id "content"}
         [:div {:id "nav-tabs"}
          [:ul
-          [:li (link-to "#overview" "Overview")]
-          [:li (link-to "/health" "Health")]
-          [:li (link-to "/varview" "Variations")]
-          [:li (link-to "/personal" "Personal")]]
+          [:li [:a {:href "#overview"} "Overview"]]
+          [:li [:a {:href "/health"} "Health"]]
+          [:li [:a {:href "/varview"} "Variations"]]
+          [:li [:a {:href "/personal"} "Personal"]]]
          (landing-template request)]]]
      std-footer]]))

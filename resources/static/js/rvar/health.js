@@ -24,9 +24,9 @@ var display_trait_vars = function(term, start, limit) {
     function(data) {
       $.each(data.variations, function(index, value) {
         console.info(value);
-        var vrn_info = "<div class='group_vrns'>" + value.variations.join(", ")
-                       + "</div>";
-        $("<li class='ui-widget-content'>" + vrn_info + "</li>")
+        var vrn_info = "<span class='group_vrns'>" + value.variations.join(", ") + "</span>";
+        var gene_info = (value.gene_name) ? value.gene_name + ": " : "";
+        $("<li class='ui-widget-content'>" + gene_info + vrn_info + "</li>")
         .appendTo(vrn_ol);
       });
       $(vrn_ol).children().hover(function() {
