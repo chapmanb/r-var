@@ -1,0 +1,18 @@
+application: our-var
+version: 0-1
+runtime: java
+handlers:
+  - url: /remote_api
+    servlet: com.google.apphosting.utils.remoteapi.RemoteApiServlet
+  - url: /*
+    servlet: rvar.servlet
+static_files:
+  - include: /**.html
+  - include: /static/**.js
+  - include: /static/**.css
+  - include: /static/**.png
+  - include: /static/**.jpg
+resource_files:
+  - include: /**.xml
+inbound_services:
+  - warmup

@@ -1,14 +1,21 @@
-<appengine-web-app xmlns="http://appengine.google.com/ns/1.0">
+<!-- Generated from app.yaml. Do not edit. -->
+<appengine-web-app xmlns='http://appengine.google.com/ns/1.0'>
   <application>our-var</application>
   <version>0-1</version>
   <static-files>
-    <include path="/**.html" />
-    <include path="/static/**.js" />
-    <include path="/static/**.css" />
-    <include path="/static/**.png" />
-    <include path="/static/**.jpg" />
+    <include path='/**.html'/>
+    <include path='/static/**.js'/>
+    <include path='/static/**.css'/>
+    <include path='/static/**.png'/>
+    <include path='/static/**.jpg'/>
   </static-files>
   <resource-files>
-    <include path="/**.xml" />
+    <include path='/**.xml'/>
   </resource-files>
+  <ssl-enabled>true</ssl-enabled>
+  <precompilation-enabled>true</precompilation-enabled>
+  <sessions-enabled>false</sessions-enabled>
+  <inbound-services>
+  </inbound-services>
+  <warmup-requests-enabled>true</warmup-requests-enabled>
 </appengine-web-app>
