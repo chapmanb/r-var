@@ -49,7 +49,7 @@
 (defn group-genes [vrns-by-gene]
   {:post [(= (-> % keys count) (-> vrns-by-gene keys count))]}
   "Group genes together based on shared variations."
-  (let [order-v-by-g (reverse (sort-by #(-> % second count) vrns-by-gene))]
+  (let [order-v-by-g (sort-by #(-> % second count) > vrns-by-gene)]
     (loop [g-vs order-v-by-g final [] finished #{}]
       (if (empty? g-vs)
         (map-gene-groups final)
@@ -57,8 +57,13 @@
               g-v2s (filter #(vrns-overlap? v1 (second %)) (rest g-vs))
               g-group (filter #(nil? (get finished %)) (cons g1 (keys g-v2s)))]
           (recur (rest g-vs) 
-                 (if (get finished g1) final (conj final g-group))
+                 (conj final g-group)
                  (into finished g-group)))))))
+
+(defn- uniquify-vrns [vrns-by-gene]
+  "Provide unique list of variations for each gene."
+  (into {} (for [[g vrns] vrns-by-gene]
+             [g (distinct vrns)])))
 
 (defn- map-genes-by-vrn [tx-file]
   "Generate a map of all genes associated with a variation."
@@ -103,22 +108,27 @@
   "Write variants as group, including a score variable for ranking."
   (doseq [[phn items] vrn-info]
     (let [[vrn-groups scores] (create-groups items groups-by-vrn)]
-      (doseq [[g vrns] vrn-groups]
+      (doseq [[i [g vrns]] (map-indexed vector vrn-groups)]
+        ; XXX ToDo -- retrieve group identifiers matching previous
+        ; database for consistency instead of using defaults here
         (.write w (str (csv/write-csv
-                         [[phn (str2/join ";" g) (str (apply + (get scores g)))
+                         [[phn (str i) (str2/join ";" g) 
+                           (str (apply + (get scores g)))
                            (str2/join ";" vrns)]])))))))
 
 (when *command-line-args*
+;(defn -main [& args]
   (let [data-dir (first *command-line-args*)
         vrn-file (file data-dir "variation-scores.csv")
         tx-file (file data-dir "tx-variation.csv")
         out-file (file data-dir "variation-groups.csv")
         groups-by-vrn (->> tx-file
                         map-vrns-by-gene
+                        uniquify-vrns
                         group-genes
                         (map-groups-by-vrn tx-file))]
     (with-open [rdr (reader vrn-file)
                 w (writer out-file)]
       (.write w (str (csv/write-csv 
-                       [["phenotype" "group" "score" "variations"]])))
+                       [["phenotype" "gid" "group" "score" "variations"]])))
       (write-group-scores w (parse-vrn-by-phn rdr) groups-by-vrn))))

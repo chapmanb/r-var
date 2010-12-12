@@ -82,6 +82,8 @@ transformers:
   property_map:
     - property: phenotype
       external_name: phenotype
+    - property: gid
+      external_name: gid
     - property: group
       external_name: group
       import_transform: 'lambda x: x.split(";")'

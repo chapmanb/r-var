@@ -9,7 +9,7 @@
 
 (ds/defentity Phenotype [name ensembl snpedia])
 (ds/defentity VariationScore [variation phenotype genescore refscore rank])
-(ds/defentity VariationGroup [phenotype group score variations])
+(ds/defentity VariationGroup [phenotype gid group score variations])
 (ds/defentity VariationTranscript [transcript_stable_id gene_stable_id
                                    variation allele peptide_allele_string
                                    consequence_type])
