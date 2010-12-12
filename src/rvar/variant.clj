@@ -40,10 +40,7 @@
         limit (-> params (get "limit" "10") (Integer/parseInt))
         start (-> params (get "start" "0") (Integer/parseInt))]
     (->> (take (+ limit extra-check) (drop start (get-phenotype-vrn-groups phenotype)))
-      (map #(dissoc % :key))
-      (map #(dissoc % :kind))
-      (map #(dissoc % :phenotype))
-      (map #(dissoc % :score))
+      (map #(select-keys % [:group :variations :gid]))
       (map #(assoc % :gene_name (-> % :group first get-gene :name)))
       (remove nil?)
       (distinct)

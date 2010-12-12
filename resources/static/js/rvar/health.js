@@ -23,11 +23,11 @@ var display_trait_vars = function(term, start, limit) {
     {phenotype: term, start: start, limit: limit},
     function(data) {
       $.each(data.variations, function(index, value) {
-        console.info(value);
-        var vrn_info = "<span class='group_vrns'>" + value.variations.join(", ") + "</span>";
+        var vrn_info = value.variations.join(", ");
         var gene_info = (value.gene_name) ? value.gene_name + ": " : "";
-        $("<li class='ui-widget-content'>" + gene_info + vrn_info + "</li>")
-        .appendTo(vrn_ol);
+        $("<li>").attr("class", "ui-widget-content").attr("gid", value.gid)
+                 .attr("phn", term).html(gene_info + vrn_info)
+         .appendTo(vrn_ol);
       });
       $(vrn_ol).children().hover(function() {
         $(this).css("cursor", "hand");
@@ -38,7 +38,8 @@ var display_trait_vars = function(term, start, limit) {
       });
       // On click, load variation info in the appropriate tab
       $(vrn_ol).children().click(function() {
-        $("#nav-tabs").tabs('url', 2, '/varview?vrns=' + $(this).find(".group_vrns").html());
+        $("#nav-tabs").tabs('url', 2, '/varview?phn=' + $(this).attr("phn") +
+                                      '&gid=' + $(this).attr("gid"));
         $("#nav-tabs").tabs('select', 2);
       });
       $("#vrn-more-button").button("option", "disabled", !data.hasmore);

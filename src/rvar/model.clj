@@ -37,6 +37,12 @@
                           :sort [[:score :desc]])]
     phn-grp))
 
+(defn get-group-vrns [phn gid]
+  "Retrieve variations associated with a phenotype and group."
+  (let [group (first (ds/query :kind VariationGroup 
+                               :filter [(= :phenotype phn) (= :gid gid)]))]
+    (:variations group)))
+
 (defn get-vrn-transcripts [vrn]
   "Retrieve transcripts associated with a variation."
   (for [vrn-tx (ds/query :kind VariationTranscript :filter (= :variation vrn))]

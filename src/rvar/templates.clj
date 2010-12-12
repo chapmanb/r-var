@@ -156,9 +156,11 @@
 
 (defn variation-template [request]
   "Show details and discussion for a specific variation."
-  (let [sname "r-var"
-        vrn-str (-> request (:query-params) (get "vrns" "rs6604026"))
-        vrns (sort-by get-variant-rank > (str2/split vrn-str #", "))
+  (let [disqus-name "r-var"
+        phn (-> request (:query-params) (get "phn" "Type 2 diabetes"))
+        gid (-> request (:query-params) (get "gid" "4"))
+        disqus-id (str (str2/replace phn #"[' ]" "_") gid)
+        vrns (sort-by get-variant-rank > (get-group-vrns phn gid))
         link-style (list [:a :text-decoration "none"] [:a:hover :color "#5f83b9"])
         link-portal-css (list 
                           [:ul :list-style-type "none" :margin 0 :padding 0]
@@ -192,7 +194,7 @@
       (for [vrn vrns]
         (vrn-details-template vrn))]
      [:div {:class "span-20 last"}
-       (disqus-thread vrn-str sname "")]]))
+       (disqus-thread disqus-id disqus-name "")]]))
      ;(disqus-body-end sname)]))
 
 (defn personal-template [request]
