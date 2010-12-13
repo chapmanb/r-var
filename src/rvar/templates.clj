@@ -230,6 +230,57 @@
   [:div {:id "getting-started" :class "prepend-top prepend-7 span-6 last"}
     [:a {:href "/health"} "Choose a health topic"]]])
 
+(defn about-template [request]
+  "About page with reasons for developing r-var."
+  (let [link-style (list [:a :text-decoration "none" :color "#0d2054"]
+                         [:a:hover :color "#5f83b9"])]
+    [:div {:id "about" :class "container"}
+     [:style {:type "text/css"}
+      (gaka/css [:#disclaimers link-style]
+                [:#implementation link-style])]
+     [:div {:id "motivation" :class "span-20 last"}
+      [:h4 "Motivation"]
+      [:p "Ourvar is motivated by the struggles of friends and family
+          dealing with autoimmune diseases. Many modern diseases
+          have a wide variety of available treatments. Doctors
+          often need to try several approaches before settling on
+          stategies that work well for a particular patient."]
+      [:p "Genetic variability underlies these differences in individual responses.
+          Single nucleotide changes are currently available to consumers interested
+          in trying to apply genetic information to improve their health. While these
+          differences are only a small part of the full genetic picture -- which
+          includes copy number variations, epigenetics and RNA interactions -- they
+          have the big advantage of being available now."]
+      [:p "By creating a community to learn about and discuss genetic
+          variations, Ourvar puts the responsibility for education in
+          your hands. Educated patients play an integral role in
+          scientific discovery and establishment of improved medical practices."]]
+     [:div {:id "disclaimers" :class "span-20 last"}
+      [:h4 "Disclaimers"]
+      [:p "Information available here is designed to supplement treatment from
+          your doctor. Please be smart and evaluate what you read as you would 
+          advice from other patients; more information is good but it is not a 
+          replacement for qualified medical advice. By commenting, you agree 
+          to make any information you share available under the "
+          [:a {:href "http://creativecommons.org/licenses/by/3.0/"}
+           "Creative Commons Attribution 3.0 Unported License"]
+          ". This enables free reuse, accelerating research and development
+          of treatment strategies."
+      ]]
+     [:div {:id "implementation" :class "span-20 last"}
+      [:h4 "Implementation"]
+      [:p "Ourvar uses freely available resources from "
+          [:a {:href "http://www.ncbi.nlm.nih.gov/pubmed"} "PubMed"] ", "
+          [:a {:href "http://www.ensembl.org"} "Ensembl"] " and "
+          [:a {:href "http://www.snpedia.com"} "SNPedia"]
+          ". It was conceived and "
+          [:a {:href "https://github.com/chapmanb/r-var"} "written"]
+          " by "
+          [:a {:href "http://bcbio.wordpress.com"} "Brad Chapman"]
+          "."
+      ]]
+     ]))
+
 (defn index-template [request]
   "Main r-var display page."
   (let [title "Ourvar: exploring our genomic variability"]
@@ -250,6 +301,8 @@
           [:li [:a {:href "#overview"} "Overview"]]
           [:li [:a {:href "/health"} "Health"]]
           [:li [:a {:href "/varview"} "Variations"]]
-          [:li [:a {:href "/personal"} "Personal"]]]
+          [:li [:a {:href "/about"} "About"]]
+          ;[:li [:a {:href "/personal"} "Personal"]]
+          ]
          (landing-template request)]]]
      std-footer]]))
