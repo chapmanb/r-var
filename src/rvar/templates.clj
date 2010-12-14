@@ -219,7 +219,7 @@
               [:#getting-started :margin-top "50px"])]
    [:div {:id "statement" :class "span-20 last"}
      [:p "Our genomes are a wonderful array of unique variations.
-          Access to our own personal sequences gives us the tools
+          Access to our own personal sequences gives us tools
           to explore individual responses to disease and every day life.
           Ourvar provides you with information to make informed decisions
           about genetic sequencing."]]
@@ -242,16 +242,17 @@
       [:h4 "Motivation"]
       [:p "Ourvar is motivated by the struggles of friends and family
           dealing with autoimmune diseases. Many modern diseases
-          have a wide variety of available treatments. Doctors
-          often need to try several approaches before settling on
-          stategies that work well for a particular patient."]
+          have a wide variety of available treatments, and
+          several approaches often need to be tried before settling on
+          a stategy that works well for a particular patient."]
       [:p "Genetic variability underlies these differences in individual responses.
           Single nucleotide changes are currently available to consumers interested
           in trying to apply genetic information to improve their health. While these
           differences are only a small part of the full genetic picture -- which
           includes copy number variations, epigenetics and RNA interactions -- they
-          have the big advantage of being available now."]
-      [:p "By creating a community to learn about and discuss genetic
+          have the big advantage of being accessible now to anyone interested
+          in learning more about their genome."]
+      [:p "By establishing a community to learn about and discuss genetic
           variations, Ourvar puts the responsibility for education in
           your hands. Educated patients play an integral role in
           scientific discovery and establishment of improved medical practices."]]

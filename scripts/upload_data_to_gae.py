@@ -42,7 +42,7 @@ def upload_file(appcfg_path, config_file, full_url, app_name,
           "--application=%s" % app_name, "--url=%s" % full_url,
           "--filename=%s" % fname, "--kind=%s" % kind,
           "--email=%s" % user, "--passin"]
-    print cl
+    print " ".join(cl)
     proc = subprocess.Popen(cl, stdin=subprocess.PIPE)
     proc.communicate("%s\n" % passwd)
 
