@@ -101,20 +101,23 @@
             score (Integer/parseInt score-str)
             g (get groups-by-vrn vrn (list vrn))]
         (recur (rest vrns)
-               (assoc groups g (cons vrn (get groups g [])))
+               (assoc groups g (cons [vrn score] (get groups g [])))
                (assoc scores g (cons score (get scores g []))))))))
 
 (defn write-group-scores [w vrn-info groups-by-vrn]
   "Write variants as group, including a score variable for ranking."
   (doseq [[phn items] vrn-info]
     (let [[vrn-groups scores] (create-groups items groups-by-vrn)]
-      (doseq [[i [g vrns]] (map-indexed vector vrn-groups)]
-        ; XXX ToDo -- retrieve group identifiers matching previous
-        ; database for consistency instead of using defaults here
-        (.write w (str (csv/write-csv
-                         [[phn (str i) (str2/join ";" g) 
-                           (str (apply + (get scores g)))
-                           (str2/join ";" vrns)]])))))))
+      (doseq [[i [g vrn-scores]] (map-indexed vector vrn-groups)]
+        (let [vrns (->> vrn-scores
+                    (sort-by second >)
+                    (map first))]
+          ; XXX ToDo -- retrieve group identifiers matching previous
+          ; database for consistency instead of using defaults here
+          (.write w (str (csv/write-csv
+                           [[phn (str i) (str2/join ";" g) 
+                             (str (apply + (get scores g)))
+                             (str2/join ";" vrns)]]))))))))
 
 (when *command-line-args*
 ;(defn -main [& args]

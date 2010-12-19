@@ -25,7 +25,7 @@
   (let [k (str2/join "," args)]
     (if (mc/contains? k :namespace n)
       (mc/get k :namespace n)
-      (let [result (doall (apply f args))]
+      (let [result (apply f args)]
         (mc/put! k result :namespace n)
         result))))
 
@@ -49,32 +49,61 @@
              phn-grp)
         (drop start)
         (take n)
-        (map #(select-keys % [:group :variations :gid]))))
+        (map #(select-keys % [:group :variations :gid]))
+        doall))
     "get-phenotype-vrn-groups" phn start n))
-
-(defn get-group-vrns [phn gid]
-  "Retrieve variations associated with a phenotype and group."
-  (let [group (first (ds/query :kind VariationGroup 
-                               :filter [(= :phenotype phn) (= :gid gid)]))]
-    (:variations group)))
 
 (defn get-vrn-transcripts [vrn]
   "Retrieve transcripts associated with a variation."
-  (for [vrn-tx (ds/query :kind VariationTranscript :filter (= :variation vrn))]
-    vrn-tx))
+  (memcache-fn
+    (fn [vrn]
+      (doall
+        (for [vrn-tx (ds/query :kind VariationTranscript :filter (= :variation vrn))]
+          (select-keys vrn-tx [:gene_stable_id :variation :allele
+                               :peptide_allele_string :consequence_type]))))
+    "get-vrn-transcripts" vrn))
 
 (defn get-vrn-providers [vrn]
   "Companies that provide genotyping of a variation."
-  (let [vrn-pro (first (ds/query :kind VariationProviders 
-                                 :filter (= :variation vrn)))]
-    (if-not (nil? vrn-pro)
-      (:providers vrn-pro))))
+  (memcache-fn
+    (fn [vrn]
+      (let [vrn-pro (first (ds/query :kind VariationProviders 
+                                     :filter (= :variation vrn)))]
+        (if-not (nil? vrn-pro)
+          (:providers vrn-pro))))
+    "get-vrn-providers" vrn))
 
 (defn get-gene [gene-id]
   "Gene name and description via the ensembl stable gene id."
-  (first
-    (for [gene (ds/query :kind Gene :filter (= :gene_stable_id gene-id))]
-      (select-keys gene [:name :description]))))
+  (memcache-fn
+    (fn [gene-id]
+      (first
+        (for [gene (ds/query :kind Gene :filter (= :gene_stable_id gene-id))]
+          (select-keys gene [:name :description]))))
+    "get-gene" gene-id))
+
+(defn get-group-vrns [phn gid]
+  "Retrieve variations associated with a phenotype and group."
+  (memcache-fn
+    (fn [phn gid]
+      (let [group (first (ds/query :kind VariationGroup 
+                                   :filter [(= :phenotype phn) (= :gid gid)]))]
+        (:variations group)))
+    "get-group-vrns" phn gid))
+
+(defn get-variant-keywords [vrn]
+  (memcache-fn
+    (fn [vrn]
+      (let [db-item (first (ds/query :kind VariationLit
+                                     :filter (= :variation vrn)))]
+        (json/read-json (.getValue (:keywords db-item)))))
+    "get-variant-keywords" vrn))
+
+(defn get-phenotype-vrns [phn]
+  "Retrieve variation data associated with the phenotype."
+  (for [phn-var (ds/query :kind VariationScore :filter (= :phenotype phn)
+                          :sort [[:rank :desc]])]
+      phn-var))
 
 (defn get-variant-rank [vrn]
   "Retrieve the rank score for a variant"
@@ -83,18 +112,6 @@
     (if-not (nil? db-item)
       (:rank db-item)
       0.0)))
-
-(defn get-variant-keywords [vrn]
-  (let [db-item (first (ds/query :kind VariationLit
-                                 :filter (= :variation vrn)))]
-    (json/read-json (.getValue (:keywords db-item)))))
-
-
-(defn get-phenotype-vrns [phn]
-  "Retrieve variation data associated with the phenotype."
-  (for [phn-var (ds/query :kind VariationScore :filter (= :phenotype phn)
-                          :sort [[:rank :desc]])]
-      phn-var))
 
 ; Support for uploaded variations for a user. Needs to be reworked.
 ;
