@@ -1,0 +1,7 @@
+indexes:
+- kind: VariationGroup
+  properties:
+  - name: phenotype
+    direction: asc
+  - name: score
+    direction: desc

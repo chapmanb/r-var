@@ -3,7 +3,9 @@
 ")
 (ns rvar.model
   (:require [clojure.contrib.json :as json]
-            [appengine-magic.services.datastore :as ds]))
+            [clojure.contrib.str-utils2 :as str2]
+            [appengine-magic.services.datastore :as ds]
+            [appengine-magic.services.memcache :as mc]))
 
 ; Entity definitions for all of the items stored in the appengine datastore
 
@@ -17,25 +19,38 @@
 (ds/defentity VariationLit [variation phenotype numrefs keywords])
 (ds/defentity Gene [gene_stable_id name description])
 
+; Allow retrieval by memcached to reduce datastore access
+(defn- memcache-fn [f n & args]
+  "Wrapper storing results in memcached based on arguments and namespace."
+  (let [k (str2/join "," args)]
+    (if (mc/contains? k :namespace n)
+      (mc/get k :namespace n)
+      (let [result (doall (apply f args))]
+        (mc/put! k result :namespace n)
+        result))))
+
 ; High level access functions instead of direct datastore access
 
 (defn get-phenotypes []
   "Retrieve top level phenotypes from the datastore."
-  (sort
-    (for [p-data (ds/query :kind Phenotype)]
-      (:name p-data))))
+  (memcache-fn 
+    (fn []
+      (sort
+        (for [p-data (ds/query :kind Phenotype)]
+          (:name p-data))))
+    "get-phenotypes"))
 
-(defn get-phenotype-vrns [phn]
-  "Retrieve variation data associated with the phenotype."
-  (for [phn-var (ds/query :kind VariationScore :filter (= :phenotype phn)
-                          :sort [[:rank :desc]])]
-      phn-var))
-
-(defn get-phenotype-vrn-groups [phn]
+(defn get-phenotype-vrn-groups [phn start n]
   "Retrieve variation groups associated with a phenotype."
-  (for [phn-grp (ds/query :kind VariationGroup :filter (= :phenotype phn)
-                          :sort [[:score :desc]])]
-    phn-grp))
+  (memcache-fn
+    (fn [phn start n]
+      (->> (for [phn-grp (ds/query :kind VariationGroup :filter (= :phenotype phn)
+                                   :sort [[:score :desc]])]
+             phn-grp)
+        (drop start)
+        (take n)
+        (map #(select-keys % [:group :variations :gid]))))
+    "get-phenotype-vrn-groups" phn start n))
 
 (defn get-group-vrns [phn gid]
   "Retrieve variations associated with a phenotype and group."
@@ -73,6 +88,13 @@
   (let [db-item (first (ds/query :kind VariationLit
                                  :filter (= :variation vrn)))]
     (json/read-json (.getValue (:keywords db-item)))))
+
+
+(defn get-phenotype-vrns [phn]
+  "Retrieve variation data associated with the phenotype."
+  (for [phn-var (ds/query :kind VariationScore :filter (= :phenotype phn)
+                          :sort [[:rank :desc]])]
+      phn-var))
 
 ; Support for uploaded variations for a user. Needs to be reworked.
 ;
