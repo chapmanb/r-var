@@ -10,6 +10,7 @@
                  [ring/ring-core "0.3.5"]
                  [ring/ring-jetty-adapter "0.3.5"]]
   :dev-dependencies [[appengine-magic "0.4.0-SNAPSHOT"]
+                     [swank-clojure "1.2.1"]
                      [vimclojure/server "2.3.0-SNAPSHOT"]
                      [mysql/mysql-connector-java "5.1.6"]
                      [clojure-csv/clojure-csv "1.2.0"]]

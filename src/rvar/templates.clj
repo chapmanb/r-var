@@ -45,16 +45,6 @@
       [:img {:alt "Creative Commons License" :style "border-width:0" 
              :src"http://i.creativecommons.org/l/by/3.0/88x31.png"}]]]])
 
-(defn upload-genome []
-  "Provide a form to upload 23andMe genomic information."
-  (form-to {:enctype "multipart/form-data"} [:post "/upload/23andme"]
-      [:fieldset
-       [:legend "Upload 23andMe data"]
-       [:ul
-       ;[:label (:for :ufile) "Data file"]
-        (file-upload :ufile)]
-       [:button (:type "submit") "Process"]]))
-
 (defn health-template [request]
   "Provide entry points for exploring SNPs related to phenotypes."
   (let [params (:query-params request)
@@ -91,17 +81,11 @@
   [:div {:id "disqus_thread"}
    [:script {:type "text/javascript"}
     (str 
+     "var disqus_shortname = '" sname "';"
      "var disqus_identifier = '" identifier "';"
      "var disqus_developer = location.host.match(/^localhost/) ? 1 : 0;
       var disqus_callback = function () { 
-        $('.dsq-request-user-name > a').each(function() {
-        });
-        $('.dsq-request-user-logout').click(function () {
-        });
-        $('.dsq-login-button').find('a').click(function () {
-        });
-     " custom-js "
-      };
+     " custom-js "};
       (function() {
        var dsq = document.createElement('script');
        dsq.type = 'text/javascript';
@@ -109,16 +93,6 @@
        "dsq.src = 'http://" sname ".disqus.com/embed.js';"
        "(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
        })();")]])
-
-(defn- disqus-body-end [sname]
-  [:script {:type "text/javascript"}
-   (str
-    "var disqus_shortname = '" sname "';"
-    "(function () {
-       var s = document.createElement('script'); s.async = true;"
-       "s.src = 'http://disqus.com/forums/" sname "/count.js';"
-       "(document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
-    }());")])
 
 (defn- gene-changes-template [vrn]
   "Display of gene changes associated with a variation"
@@ -195,20 +169,29 @@
         (vrn-details-template vrn))]
      [:div {:class "span-20 last"}
        (disqus-thread disqus-id disqus-name "")]]))
-     ;(disqus-body-end sname)]))
+
+(defn- upload-genome []
+  "Provide a form to upload 23andMe genomic information."
+  (form-to {:enctype "multipart/form-data"} [:post "/upload/23andme"]
+      [:fieldset
+       [:legend "Upload 23andMe data"]
+       [:ul
+        (file-upload :ufile)]
+       [:button (:type "submit") "Process"]]))
+
+(defn personal-upload [request]
+  "Upload or display personal genome information."
+  (upload-genome))
 
 (defn personal-template [request]
   "Information for a logged in users personal page."
-  (let [sname "r-var"
-        custom-js "$('#dsq-global-toolbar').hide();
-                   $('.dsq-options').hide();
-                   $('#dsq-comments-title').hide();
-                   $('#dsq-comments').hide();
-                   $('#dsq-pagination').hide();
-                   $('#dsq-new-post').find('h3').hide();
-                   $('.dsq-autheneticate-copy').html('Login');
-                   $('#dsq-form-area').hide();"]
-     (disqus-thread "personal" sname custom-js)))
+  (let [sname "r-var"]
+    [:div {:id "personal"}
+     [:script {:type "text/javascript"
+               :src "/static/js/rvar/personal.js"}]
+     [:div {:id "personal-title"}]
+     (disqus-thread "personal" sname "personal_page_load();")
+     [:div {:id "personal-details"}]]))
 
 (defn landing-template [request]
   [:div {:id "overview" :class "container span-23 last"}
@@ -303,7 +286,7 @@
           [:li [:a {:href "/health"} "Health"]]
           [:li [:a {:href "/varview"} "Variations"]]
           [:li [:a {:href "/about"} "About"]]
-          ;[:li [:a {:href "/personal"} "Personal"]]
+          [:li [:a {:href "/personal"} "Personal"]]
           ]
          (landing-template request)]]]
      std-footer]]))

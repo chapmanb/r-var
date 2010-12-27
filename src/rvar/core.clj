@@ -13,11 +13,12 @@
 
 (defroutes r-var-web
   (GET "/" request (html (index-template request)))
-  (GET "/personal" request (html (personal-template request)))
   (GET "/varview" request (html (variation-template request)))
   (GET "/health" request (html (health-template request)))
   (GET "/health/variations" request (html (trait-vrn-list request)))
   (GET "/about" request (html (about-template request)))
+  (GET "/personal" request (html (personal-template request)))
+  (GET "/personal/upload" request (html (personal-upload request)))
   ;(GET "/data/variations" request (vrn-list request))
   ;(POST "/upload/23andme" request (upload-23andme request))
   (route/not-found "Page not found"))
