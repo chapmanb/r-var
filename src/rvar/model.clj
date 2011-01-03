@@ -7,8 +7,7 @@
             [appengine-magic.services.datastore :as ds]
             [appengine-magic.services.memcache :as mc]))
 
-; Entity definitions for all of the items stored in the appengine datastore
-
+; Entity definitions for items in the appengine datastore
 (ds/defentity Phenotype [name ensembl snpedia])
 (ds/defentity VariationScore [variation phenotype genescore refscore rank])
 (ds/defentity VariationGroup [phenotype gid group score variations])
@@ -18,6 +17,8 @@
 (ds/defentity VariationProviders [variation providers])
 (ds/defentity VariationLit [variation phenotype numrefs keywords])
 (ds/defentity Gene [gene_stable_id name description])
+(ds/defentity UserVariationGroup [user filename])
+(ds/defentity UserVariation [user-group variation genotype])
 
 ; Allow retrieval by memcached to reduce datastore access
 (defn- memcache-fn [f n & args]
@@ -113,6 +114,23 @@
       (:rank db-item)
       0.0)))
 
+(defn- delete-user-variants [user fname]
+  "Delete existing variants for a user and filename."
+  (if-let [ugroup (first (ds/query :kind UserVariationGroup
+                                   :filter [(= :user user) (= :filename fname)]))]
+    (do
+      (ds/delete! (ds/query :kind UserVariation
+                            :filter (= :user-group ugroup)))
+      (ds/delete! ugroup))))
+
+(defn load-user-variants [user fname variants]
+  "Load a lazy stream of variance information into the datastore."
+  (delete-user-variants user fname)
+  (let [ugroup (ds/save! (UserVariationGroup. user fname))]
+    (ds/with-transaction
+      (doseq [cur-var (take 1 variants)]
+        (ds/save! (UserVariation. ugroup (:id cur-var) (:genotype cur-var)))))))
+
 ; Support for uploaded variations for a user. Needs to be reworked.
 ;
 ;(defn get-user [email]
@@ -122,10 +140,6 @@
 ;      (create-entity {:kind "user" :email email})
 ;      (first user-query))))
 ;
-;(defn load-var-group [user fname]
-;  (with-commit-transaction
-;    (create-entity {:kind "vargroup" :parent (:key user) :filename fname})))
-;
 ;(defn get-user-variations [email]
 ;  "Retrieve a lazy list of variation objects for the given user."
 ;  (let [user (get-user email)]
@@ -133,15 +147,3 @@
 ;      (for [var-group (select "vargroup" where (= :parent (:key user)))]
 ;        (for [cur-var (select "variation" where (= :parent (:key var-group)))]
 ;          cur-var)))))
-;
-;(defn load-variances [user fname variances]
-;  "Load a lazy stream of variance information into the datastore."
-;  (let [group (load-var-group user fname)]
-;    (with-commit-transaction
-;      (doseq [cur-var (take 1 variances)]
-;        (create-entity {:kind "variation" :parent (:key group)
-;                        :start (:start cur-var) :end (:end cur-var)
-;                        :chrom (:chr cur-var) :genotype (:genotype cur-var)
-;                        :id (:id cur-var)
-;                        })))
-;    group))

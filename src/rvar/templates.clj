@@ -174,9 +174,9 @@
   "Provide a form to upload 23andMe genomic information."
   (form-to {:enctype "multipart/form-data"} [:post "/upload/23andme"]
       [:fieldset
-       [:legend "Upload 23andMe data"]
+       [:legend "23andMe data"]
        [:ul
-        (file-upload :ufile)]
+        (file-upload :file)]
        [:button (:type "submit") "Process"]]))
 
 (defn personal-upload [request]

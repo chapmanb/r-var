@@ -7,7 +7,8 @@
         [ring.util.servlet]
         [rvar.templates]
         [rvar.variant]
-        [rvar.upload])
+        [rvar.upload]
+        [appengine-magic.multipart-params :only [wrap-multipart-params]])
   (:require [compojure.route :as route]
             [appengine-magic.core :as ae]))
 
@@ -19,8 +20,8 @@
   (GET "/about" request (html (about-template request)))
   (GET "/personal" request (html (personal-template request)))
   (GET "/personal/upload" request (html (personal-upload request)))
+  (POST "/upload/23andme" request (wrap-multipart-params upload-23andme))
   ;(GET "/data/variations" request (vrn-list request))
-  ;(POST "/upload/23andme" request (upload-23andme request))
   (route/not-found "Page not found"))
 
 (ae/def-appengine-app rvar-app #'r-var-web)
