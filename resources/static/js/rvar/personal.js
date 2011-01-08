@@ -26,6 +26,7 @@ var personal_page_load = function() {
       url: '/personal/upload',
       success: function (data) {
         $("#personal-details").html(data);
+        $("#personal-details").find("#user").attr("value", user_name);
       }
     });
   }

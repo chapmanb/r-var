@@ -177,6 +177,7 @@
        [:legend "23andMe data"]
        [:ul
         (file-upload :file)]
+       [:input {:id "user" :name "user" :type "hidden" :value "none"}]
        [:button (:type "submit") "Process"]]))
 
 (defn personal-upload [request]

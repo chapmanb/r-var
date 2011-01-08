@@ -4,10 +4,9 @@ Upload, process and store details on genomic variance.
 
 (ns rvar.upload
   (:use [clojure.java.io]
-        [clojure.contrib.str-utils])
+        [clojure.contrib.str-utils]
+        [ring.util.response :only [redirect]])
   (:require [rvar.model :as model]))
-;(:import (java.io InputStreamReader
-;                    ByteArrayOutputStream ByteArrayInputStream ObjectInputStream))
 
 (defn parse-23andme [line-iter]
   "Lazily produce hash-map of variances from 23andMe text file."
@@ -25,8 +24,9 @@ Upload, process and store details on genomic variance.
 (defn upload-23andme [request]
   "Upload a file of 23andme SNPs."
   (let [file-upload (get (request :multipart-params) "file")
-        user "test"
+        user (get (request :multipart-params) "user")
         fname (file-upload :filename)
         file-iter (-> file-upload :bytes reader line-seq) 
         variants (variants-23andme file-iter)]
-    (str (model/load-user-variants user fname variants))))
+    (model/load-user-variants user fname variants))
+  (redirect "/"))

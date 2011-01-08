@@ -123,12 +123,18 @@
                             :filter (= :user-group ugroup)))
       (ds/delete! ugroup))))
 
+(defn vrn-available? [vrn]
+  "Check if variation is present in the datastore."
+  (let [check (first (ds/query :kind VariationProviders
+                               :filter (= :variation vrn)))]
+    (not (nil? check))))
+
 (defn load-user-variants [user fname variants]
   "Load a lazy stream of variance information into the datastore."
   (delete-user-variants user fname)
   (let [ugroup (ds/save! (UserVariationGroup. user fname))]
     (ds/with-transaction
-      (doseq [cur-var (take 1 variants)]
+      (doseq [cur-var (take 1 (filter #(vrn-available? (:id %)) variants))]
         (ds/save! (UserVariation. ugroup (:id cur-var) (:genotype cur-var)))))))
 
 ; Support for uploaded variations for a user. Needs to be reworked.
