@@ -137,19 +137,12 @@
       (doseq [cur-var (take 1 (filter #(vrn-available? (:id %)) variants))]
         (ds/save! (UserVariation. ugroup (:id cur-var) (:genotype cur-var)))))))
 
-; Support for uploaded variations for a user. Needs to be reworked.
-;
-;(defn get-user [email]
-;  "Get or create a database user with the given email address."
-;  (let [user-query (select "user" where (= :email email))]
-;    (if (empty? user-query)
-;      (create-entity {:kind "user" :email email})
-;      (first user-query))))
-;
-;(defn get-user-variations [email]
-;  "Retrieve a lazy list of variation objects for the given user."
-;  (let [user (get-user email)]
-;    (flatten
-;      (for [var-group (select "vargroup" where (= :parent (:key user)))]
-;        (for [cur-var (select "variation" where (= :parent (:key var-group)))]
-;          cur-var)))))
+(defn get-user-genotypes [user vrn]
+  "Retrieve stored genotypes for a provided variation"
+  (remove nil?
+          (for [ugroup (ds/query :kind UserVariationGroup
+                                 :filter (= :user user))]
+            (-> (ds/query :kind UserVariation
+                          :filter [(= :user-group ugroup) (= :variation vrn)])
+                first
+                (:genotype)))))
