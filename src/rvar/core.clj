@@ -19,9 +19,9 @@
   (GET "/health/variations" request (html (trait-vrn-list request)))
   (GET "/about" request (html (about-template request)))
   (GET "/personal" request (html (personal-template request)))
+  (GET "/personal/genotype" request (user-vrn-genotypes request))
   (GET "/personal/upload" request (html (personal-upload request)))
   (POST "/upload/23andme" request (wrap-multipart-params upload-23andme))
-  ;(GET "/data/variations" request (vrn-list request))
   (route/not-found "Page not found"))
 
 (ae/def-appengine-app rvar-app #'r-var-web)

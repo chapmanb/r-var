@@ -97,6 +97,7 @@
 (defn- gene-changes-template [vrn]
   "Display of gene changes associated with a variation"
   [:ul {:id "gene-allele"}
+   [:div {:class "user-vrn" :value vrn}]
   (for [[allele gene-info] (vrn-gene-changes vrn)]
     [:li allele
     [:ul {:id "gene-name"}
@@ -168,7 +169,16 @@
       (for [vrn vrns]
         (vrn-details-template vrn))]
      [:div {:class "span-20 last"}
-       (disqus-thread disqus-id disqus-name "")]]))
+      (disqus-thread disqus-id disqus-name "user_vrn_load();")]]))
+
+(defn user-vrn-genotypes [request]
+  "Provide html representation of user genotypes at a variation."
+  (let [user (-> request (:params) (get "user"))
+        vrn (-> request (:params) (get "vrn"))
+        user-vrns (get-user-genotypes user vrn)]
+    (if (> (count user-vrns) 0)
+      (format "You: %s" (str2/join ", " user-vrns))
+      "")))
 
 (defn- upload-genome []
   "Provide a form to upload 23andMe genomic information."
@@ -286,8 +296,8 @@
           [:li [:a {:href "#overview"} "Overview"]]
           [:li [:a {:href "/health"} "Health"]]
           [:li [:a {:href "/varview"} "Variations"]]
-          [:li [:a {:href "/about"} "About"]]
           [:li [:a {:href "/personal"} "Personal"]]
+          [:li [:a {:href "/about"} "About"]]
           ]
          (landing-template request)]]]
      std-footer]]))
