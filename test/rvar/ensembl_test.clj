@@ -15,10 +15,10 @@
                (:validation_status (first rs))))))))
 
 (deftest test-var-by-phenotype
-  (let [phenotype "Multiple Sclerosis"]
+  (let [phenotype "Primary biliary cirrhosis"]
       (let [vars (phenotype-variations phenotype phenotype)]
-        (is (= 501 (count vars)))
-        (is (= "rs2107732" (:variation (first vars)))))))
+        (is (> (count vars) 50))
+        (is (= "rs4679904" (:variation (first vars)))))))
 
 (deftest test-variance-genes
   (let [vname "rs6897932"]

@@ -2,7 +2,7 @@
   Tests for extracting and storing genomic variance data.
 ")
 (ns rvar.variance-test
-  (:use [rvar.variance] :reload-all)
+  (:use [rvar.upload] :reload-all)
   (:use [clojure.test]
         [clojure.java.io]))
 
