@@ -1,7 +1,7 @@
-(comment "
-  Tests for extracting and storing genomic variance data.
-")
-(ns rvar.variance-test
+;; Tests for retrieving tested variations from genomic regions.
+;;
+
+(ns rvar.test-region
   (:use [rvar.upload] :reload-all)
   (:use [clojure.test]
         [clojure.java.io]))

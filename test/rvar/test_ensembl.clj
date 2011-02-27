@@ -1,7 +1,7 @@
 (comment "
   Tests for retrieving variation information from Ensembl.
 ")
-(ns rvar.ensembl-test
+(ns rvar.test-ensembl
   (:use [rvar.ensembl] :reload-all)
   (:use [clojure.test]
         [clojure.contrib.sql]))
