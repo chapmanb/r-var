@@ -11,3 +11,6 @@
         var-lines (line-seq (reader var-file))
         var-iter (parse-23andme var-lines)]
     (is (= "AA" (:genotype (first var-iter))))))
+
+(deftest region-vrns
+  (testing "Retrieve variations from a genome region by name"))

@@ -5,7 +5,7 @@
   (:use [clojure.contrib.sql])
   (:require [clojure.contrib.str-utils2 :as str]))
 
-(def ensembl-version "60_37e")
+(def ensembl-version "61_37f")
 
 (defn- ensembl-db [db-name]
   "Connection to Ensembl database with the given name."
@@ -34,7 +34,7 @@
 (defn- clean-annotation [phenotype result]
   "Remove internal identifiers from an Ensembl annotation result."
   (for [vr (str/split (:variation_names result) #",")]
-    (let [genes (map str/trim 
+    (let [genes (map str/trim
                      (str/split (str (:associated_gene result)) #","))]
       (-> (zipmap (keys result) (vals result))
         (assoc :variation vr)
@@ -113,9 +113,9 @@
   "Retrieve gene information given a transcript."
   (let [gene-id (ensembl-gene-id tx-stable-id)
         gene-stable-id (ensembl-gene-stable gene-id)
-        sql "select x.display_label, x.description 
+        sql "select x.display_label, x.description
              FROM xref x, object_xref ox, external_db e
-             WHERE ox.xref_id = x.xref_id AND e.external_db_id = x.external_db_id 
+             WHERE ox.xref_id = x.xref_id AND e.external_db_id = x.external_db_id
              AND ox.ensembl_id=? AND ox.ensembl_object_type=? AND e.type=?"]
     (with-query-results rs [sql gene-id "Gene" "PRIMARY_DB_SYNONYM"]
       {:name (:display_label (first rs))
@@ -143,6 +143,22 @@
                       (-> gene
                         (assoc :description (clean-commas (:description gene))))])]
     ; Organize as map of genes to transcripts
-    (reduce (fn [all-genes [var-tx gene]] 
+    (reduce (fn [all-genes [var-tx gene]]
               (assoc all-genes gene (cons var-tx (get all-genes gene))))
             {} (map #(apply xref-gene %) (transcript-and-genes vname)))))
+
+(defn- tx-ids-by-gene [stable-gene-id]
+  "External and internal transcript IDs by gene."
+  (let [sql (str "SELECT ts.stable_id, ts.transcript_id FROM "
+                 "transcript_stable_id ts, transcript t, gene_stable_id g "
+                 "WHERE g.stable_id=? AND g.gene_id = t.gene_id "
+                 "AND t.transcript_id = ts.transcript_id")]
+    (with-query-results rs [sql stable-gene-id]
+      (vec rs))))
+
+(defn transcripts-by-gene [stable-gene-id]
+  "Retrieve transcripts with exon coordinates from a stable gene ID."
+  (with-connection (human-core-db)
+    (for [tx-info (tx-ids-by-gene stable-gene-id)]
+      tx-info
+      )))
