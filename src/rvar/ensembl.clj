@@ -156,9 +156,24 @@
     (with-query-results rs [sql stable-gene-id]
       (vec rs))))
 
+(defn- exon-coords-by-tx [tx-id]
+  "Retrieve exon coordinates for a transcript."
+  (let [sql-exons (str "SELECT exon_id FROM exon_transcript "
+                       "WHERE transcript_id=? ORDER BY rank")
+        sql-coord (str "SELECT sr.name, e.seq_region_start, e.seq_region_end, "
+                       "e.seq_region_strand FROM exon e, seq_region sr "
+                       "WHERE sr.seq_region_id = e.seq_region_id AND e.exon_id = ?")]
+    (letfn [(coords [exon-id]
+                    (with-query-results rs [sql-coord exon-id]
+                      (vec rs)))
+            (exons [tx-id]
+                   (with-query-results rs [sql-exons tx-id]
+                     (vec (map #(:exon_id %) rs))))]
+      (doall (map coords (exons tx-id))))))
+
 (defn transcripts-by-gene [stable-gene-id]
   "Retrieve transcripts with exon coordinates from a stable gene ID."
   (with-connection (human-core-db)
-    (for [tx-info (tx-ids-by-gene stable-gene-id)]
-      tx-info
-      )))
+    (doall
+     (for [tx-info (tx-ids-by-gene stable-gene-id)]
+       (assoc tx-info :exons (exon-coords-by-tx (:transcript_id tx-info)))))))
