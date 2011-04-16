@@ -1,7 +1,9 @@
 classes
 lib
+war
 resources/WEB-INF/appengine-generated
 resources/WEB-INF/classes
 resources/WEB-INF/lib
 scripts/bulkloader*
 scripts/*.csv*
+scripts/data

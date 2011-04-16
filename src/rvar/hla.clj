@@ -1,4 +1,13 @@
 ;; Functionality related to retrieval and parsing of HLA proteins
+;; General approach
+;; 1. Retrieve transcripts and sequence regions for HLA genes.
+;; 2. Identify variations by rs number that map in those regions and
+;;    are assayed by 23andme.
+;; 3. Build table of rs number, associated HLA gene name and amino
+;;    acid change.
+;; 4. Associate changes with HLA genotypes.
+;; 5. Use this association to genotype HLA
+
 (ns rvar.hla
   (:use [clojure.contrib.duck-streams :only [reader]]
         [net.cgrand.enlive-html :only [html-resource select text]])
