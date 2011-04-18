@@ -26,7 +26,12 @@ Upload, process and store details on genomic variance.
   (let [file-upload (get (request :multipart-params) "file")
         user (get (request :multipart-params) "user")
         fname (file-upload :filename)
-        file-iter (-> file-upload :bytes reader line-seq) 
+        file-iter (-> file-upload :bytes reader line-seq)
         variants (variants-23andme file-iter)]
     (model/load-user-variants user fname variants))
   (redirect "/"))
+
+(defn file-23andme [fname]
+  "Lazy iterator of 23andme variances from a downloaded file."
+  (let [vrn-lines (line-seq (reader fname))]
+    (parse-23andme vrn-lines)))
