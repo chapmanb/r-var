@@ -14,7 +14,8 @@
                      [mysql/mysql-connector-java "5.1.6"]
                      [enlive "1.0.0"]
                      [biomart-client "1.0.0-SNAPSHOT"]
-                     [clojure-csv/clojure-csv "1.3.2"]]
+                     [clojure-csv/clojure-csv "1.3.2"]
+                     [midje "1.1.1"]]
   :jvm-opts ["-Xmx1512M"]
   :run-aliases {:hla-get rvar.hla
                 :lit-ms rvar.literature.ms})

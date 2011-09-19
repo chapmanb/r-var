@@ -7,13 +7,14 @@
 
 (ns rvar.literature.ms
   (:use [clojure.java.io]
+        [clojure.string :only [split]]
         [rvar.upload :only [parse-23andme]])
   (:require [clojure-csv.core :as csv]
             [biomart-client.query :as biomart]
             [biomart-client.utils :as biomart-utils]))
 
 ;; Retrieve associated variant data from BioMart
-(def *mart-url* "http://www.ensembl.org/biomart")
+(def *mart-url* "http://uswest.ensembl.org/biomart")
 
 (defn ensembl-gene-info [gene-name]
   "Retrieve Ensembl gene ID from the provided symbol"
@@ -50,6 +51,26 @@
   "Prepare map allowing selection by the variation rsid"
   (zipmap (map :rsid xs) xs))
 
+;; Ensure risk-alleles are on the same strand as dbSNP reference 
+
+(defn- complement-base [b]
+  (let [b-map {"A" "T"
+               "T" "A"
+               "G" "C"
+               "C" "G"}]
+    (get b-map b)))
+
+(defn- are-complements? [a b]
+  (= (complement-base a) b))
+
+(defn assess-risk-allele [risk-allele dbsnp-allele]
+  "Retrieve correct strand risk allele given reference dbSNPs."
+  (let [dbsnp-alleles (set (split dbsnp-allele #"/"))
+        comp-risk (complement-base risk-allele)]
+    (if-not (apply are-complements? dbsnp-alleles)
+      (cond (contains? dbsnp-alleles risk-allele) risk-allele
+            (contains? dbsnp-alleles comp-risk) comp-risk))))
+
 (defn -main [lit-file snp-file]
   "Compare literature CSV file with 23andme SNPs."
   (with-open [lit-rdr (reader lit-file)
@@ -57,6 +78,14 @@
     (let [ms-map (lookup-by-rsid (parse-ms-nature-sup lit-rdr))]
       (doseq [snp-info (->> (parse-23andme (line-seq snp-rdr))
                             (filter #(contains? ms-map (:rsid %))))]
-        (let [ms-info (ms-map (:rsid snp-info))]
-          (println snp-info ms-info)
-          (println (dbsnp-info (:rsid snp-info) (:gene ms-info))))))))
+        (let [ms-info (ms-map (:rsid snp-info))
+              dbsnp-map (dbsnp-info (:rsid snp-info) (:gene ms-info))
+              risk-allele (assess-risk-allele (:risk-allele ms-info)
+                                              (get dbsnp-map "allele"))
+              snp-alleles (set (map str (seq (:genotype snp-info))))]
+          (if (nil? risk-allele)
+            (println "Could not evaluate" snp-info ms-info dbsnp-map))
+          (if (contains? snp-alleles risk-allele)
+            (do 
+              (println snp-info ms-info dbsnp-map)
+              (println "----"))))))))
